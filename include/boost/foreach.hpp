@@ -14,7 +14,8 @@
 
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
-#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1310))
+#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1310))             \
+ || BOOST_WORKAROUND(BOOST_INTEL_WIN, BOOST_TESTED_AT(800))
 # define BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 #endif
 
