@@ -29,26 +29,44 @@ in order to handle r-value sequences properly. (Recall that an r-value is an unn
 an example of an r-value sequence would be a function that returns a <tt class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;&gt;</span></tt> by value.) Compilers
 vary in their handling of r-values and l-values. To cope with the situation <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> defines three
 levels of compliance, described below:</p>
-<div class="itemizedlist"><ul type="disc">
-<li>
-<span class="emphasis"><em>Level 0 - Highest level of compliance</em></span>: <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values, r-values and
-  const-qualified r-values.
-</li>
-<li>
-<span class="emphasis"><em>Level 1 - Moderate level of compliance</em></span>: <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values and plain r-values,
-  but not const-qualified r-values. (BOOST_FOREACH_NO_CONST_RVALUE_DETECTION is defined in this case.)
-</li>
-<li>
-<span class="emphasis"><em>Level 2 - Lowest level of compliance</em></span>: <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values only, not r-values.
-  (BOOST_FOREACH_NO_RVALUE_DETECTION is defined in this case.)
-</li>
-</ul></div>
+<div class="informaltable">
+<h4>
+<a name="id448225"></a><span class="table-title">BOOST_FOREACH Compliance Levels</span>
+</h4>
+<table class="table">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Level</th>
+<th>Meaning</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><span class="bold"><b>Level 0</b></span></td>
+<td>
+<span class="emphasis"><em><span class="underline">Highest level of compliance</span></em></span><br><tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values, r-values and const-qualified r-values.</td>
+</tr>
+<tr>
+<td><span class="bold"><b>Level 1</b></span></td>
+<td>
+<span class="emphasis"><em><span class="underline">Moderate level of compliance</span></em></span><br><tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values and plain r-values, but not const-qualified r-values.<br><tt class="computeroutput"><span class="identifier">BOOST_FOREACH_NO_CONST_RVALUE_DETECTION</span></tt> is defined in this case.</td>
+</tr>
+<tr>
+<td><span class="bold"><b>Level 2</b></span></td>
+<td>
+<span class="emphasis"><em><span class="underline">Lowest level of compliance</span></em></span><br><tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works with l-values only, not r-values.<br><tt class="computeroutput"><span class="identifier">BOOST_FOREACH_NO_RVALUE_DETECTION</span></tt> is defined in this case.</td>
+</tr>
+</tbody>
+</table>
+</div>
 <p>
 Below are the compilers <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> has been tested with, and the compliance level you can expect
 from each.</p>
 <div class="informaltable">
 <h4>
-<a name="id4811622"></a><span class="table-title">Compiler Compliance Level</span>
+<a name="id448368"></a><span class="table-title">Compiler Compliance Level</span>
 </h4>
 <table class="table">
 <colgroup>

@@ -220,12 +220,17 @@ an example of an r-value sequence would be a function that returns a `std::vecto
 vary in their handling of r-values and l-values. To cope with the situation _foreach_ defines three
 levels of compliance, described below:
 
-* ['Level 0 - Highest level of compliance]: _foreach_ works with l-values, r-values and
-  const-qualified r-values.
-* ['Level 1 - Moderate level of compliance]: _foreach_ works with l-values and plain r-values,
-  but not const-qualified r-values. (BOOST_FOREACH_NO_CONST_RVALUE_DETECTION is defined in this case.)
-* ['Level 2 - Lowest level of compliance]: _foreach_ works with l-values only, not r-values.
-  (BOOST_FOREACH_NO_RVALUE_DETECTION is defined in this case.)
+[table BOOST_FOREACH Compliance Levels
+  [[Level]   [Meaning]]
+  [[*Level 0*] [['[_Highest level of compliance]]\n
+                _foreach_ works with l-values, r-values and const-qualified r-values.]]
+  [[*Level 1*] [['[_Moderate level of compliance]]\n
+                _foreach_ works with l-values and plain r-values, but not const-qualified r-values.\n
+                `BOOST_FOREACH_NO_CONST_RVALUE_DETECTION` is defined in this case.]]
+  [[*Level 2*] [['[_Lowest level of compliance]]\n
+                _foreach_ works with l-values only, not r-values.\n
+                `BOOST_FOREACH_NO_RVALUE_DETECTION` is defined in this case.]]
+]
 
 Below are the compilers _foreach_ has been tested with, and the compliance level you can expect
 from each.

@@ -66,6 +66,11 @@ title, h1.title, h2.title, h3.title,
     margin-bottom: 1pc;
 }
 
+span.underline
+{
+    text-decoration: underline;
+}
+
 /* Spirit style navigation */
 .spirit-nav
 {
