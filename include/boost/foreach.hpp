@@ -48,24 +48,26 @@ namespace for_each
 // adl_begin/adl_end
 //
 template<typename T>
-inline typename range_result_iterator<T>::type adl_begin(T &t)
+inline BOOST_DEDUCED_TYPENAME range_result_iterator<T>::type adl_begin(T &t)
 {
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
     return boost::begin(t);
 #else
     using boost::begin;
-    return typename range_result_iterator<T>::type(begin(t));
+    typedef BOOST_DEDUCED_TYPENAME range_result_iterator<T>::type type;
+    return type(begin(t));
 #endif
 }
 
 template<typename T>
-inline typename range_result_iterator<T>::type adl_end(T &t)
+inline BOOST_DEDUCED_TYPENAME range_result_iterator<T>::type adl_end(T &t)
 {
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
     return boost::end(t);
 #else
     using boost::end;
-    return typename range_result_iterator<T>::type(end(t));
+    typedef BOOST_DEDUCED_TYPENAME range_result_iterator<T>::type type;
+    return type(end(t));
 #endif
 }
 
@@ -99,7 +101,7 @@ struct static_any : static_any_base
 typedef static_any_base const &static_any_t;
 
 template<typename T,bool C>
-inline typename mpl::if_c<C,T const,T>::type &static_any_cast(static_any_t a)
+inline BOOST_DEDUCED_TYPENAME mpl::if_c<C,T const,T>::type &static_any_cast(static_any_t a)
 {
     return static_cast<static_any<T> const &>(a).item;
 }
@@ -110,8 +112,8 @@ inline typename mpl::if_c<C,T const,T>::type &static_any_cast(static_any_t a)
 template<typename T,bool C>
 struct container
 {
-    typedef typename mpl::if_c<C,T const,T>::type type;
-    typedef typename mpl::eval_if_c<C,range_const_iterator<T>,range_iterator<T> >::type iterator;
+    typedef BOOST_DEDUCED_TYPENAME mpl::if_c<C,T const,T>::type type;
+    typedef BOOST_DEDUCED_TYPENAME mpl::eval_if_c<C,range_const_iterator<T>,range_iterator<T> >::type iterator;
 };
 
 template<typename T>
@@ -311,7 +313,7 @@ inline static_any<T> contain(T const &t, mpl::true_, mpl::false_) // r-value
 // begin
 //
 template<typename T,bool C>
-inline static_any<typename container<T,C>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,C>::iterator>
 begin(static_any_t col, container<T,C>, bool, mpl::true_)
 {
     return for_each::adl_begin(static_any_cast<T,C>(col));
@@ -319,29 +321,29 @@ begin(static_any_t col, container<T,C>, bool, mpl::true_)
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 template<typename T>
-inline static_any<typename container<T,false>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,false>::iterator>
 begin(static_any_t col, container<T,false>, bool, mpl::false_)
 {
     return for_each::adl_begin(*static_any_cast<T *,false>(col));
 }
 
 template<typename T>
-inline static_any<typename container<T,true>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,true>::iterator>
 begin(static_any_t col, container<T,true>, bool, mpl::false_)
 {
     return for_each::adl_begin(*static_any_cast<simple_variant<T const>,false>(col).get());
 }
 #else
 template<typename T,bool C>
-inline static_any<typename container<T,C>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,C>::iterator>
 begin(static_any_t col, container<T,C>, mpl::false_, mpl::false_) // l-value
 {
-    typedef typename container<T,C>::type type;
+    typedef BOOST_DEDUCED_TYPENAME container<T,C>::type type;
     return for_each::adl_begin(*static_any_cast<type *,false>(col));
 }
 
 template<typename T>
-inline static_any<typename container<T,true>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,true>::iterator>
 begin(static_any_t col, container<T,true>, mpl::true_, mpl::false_) // r-value
 {
     return for_each::adl_begin(static_any_cast<T,true>(col));
@@ -352,7 +354,7 @@ begin(static_any_t col, container<T,true>, mpl::true_, mpl::false_) // r-value
 // end
 //
 template<typename T,bool C>
-inline static_any<typename container<T,C>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,C>::iterator>
 end(static_any_t col, container<T,C>, bool, mpl::true_)
 {
     return for_each::adl_end(static_any_cast<T,C>(col));
@@ -367,29 +369,29 @@ end(static_any_t col, container<T *,C>, bool, mpl::true_)
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 template<typename T>
-inline static_any<typename container<T,false>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,false>::iterator>
 end(static_any_t col, container<T,false>, bool, mpl::false_)
 {
     return for_each::adl_end(*static_any_cast<T *,false>(col));
 }
 
 template<typename T>
-inline static_any<typename container<T,true>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,true>::iterator>
 end(static_any_t col, container<T,true>, bool, mpl::false_)
 {
     return for_each::adl_end(*static_any_cast<simple_variant<T const>,false>(col).get());
 }
 #else
 template<typename T,bool C>
-inline static_any<typename container<T,C>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,C>::iterator>
 end(static_any_t col, container<T,C>, mpl::false_, mpl::false_) // l-value
 {
-    typedef typename container<T,C>::type type;
+    typedef BOOST_DEDUCED_TYPENAME container<T,C>::type type;
     return for_each::adl_end(*static_any_cast<type *,false>(col));
 }
 
 template<typename T>
-inline static_any<typename container<T,true>::iterator>
+inline static_any<BOOST_DEDUCED_TYPENAME container<T,true>::iterator>
 end(static_any_t col, container<T,true>, mpl::true_, mpl::false_) // r-value
 {
     return for_each::adl_end(static_any_cast<T,true>(col));
@@ -402,7 +404,7 @@ end(static_any_t col, container<T,true>, mpl::true_, mpl::false_) // r-value
 template<typename T,bool C>
 inline bool done(static_any_t cur, static_any_t end, container<T,C>)
 {
-    typedef typename container<T,C>::iterator iter_t;
+    typedef BOOST_DEDUCED_TYPENAME container<T,C>::iterator iter_t;
     return static_any_cast<iter_t,false>(cur) == static_any_cast<iter_t,false>(end);
 }
 
@@ -418,7 +420,7 @@ inline bool done(static_any_t cur, static_any_t, container<T *,C>)
 template<typename T,bool C>
 inline void next(static_any_t cur, container<T,C>)
 {
-    typedef typename container<T,C>::iterator iter_t;
+    typedef BOOST_DEDUCED_TYPENAME container<T,C>::iterator iter_t;
     ++static_any_cast<iter_t,false>(cur);
 }
 
@@ -426,10 +428,10 @@ inline void next(static_any_t cur, container<T,C>)
 // deref
 //
 template<typename T,bool C>
-inline typename std::iterator_traits<typename container<T,C>::iterator>::reference
+inline BOOST_DEDUCED_TYPENAME std::iterator_traits<BOOST_DEDUCED_TYPENAME container<T,C>::iterator>::reference
 deref(static_any_t cur, container<T,C>)
 {
-    typedef typename container<T,C>::iterator iter_t;
+    typedef BOOST_DEDUCED_TYPENAME container<T,C>::iterator iter_t;
     return *static_any_cast<iter_t,false>(cur);
 }
 
@@ -442,7 +444,7 @@ deref(static_any_t cur, container<T,C>)
 # define BOOST_FOREACH_RVALUE(COL) _foreach_rvalue
 
 // Evaluate the container expression, and detect if it is an l-value or and r-value
-# define BOOST_FE_EVAL(COL)                                                     \
+# define BOOST_FOREACH_EVAL(COL)                                                \
     (true ? ::boost::for_each::rvalue_probe((COL),_foreach_rvalue) : (COL))
 
 #else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
@@ -452,7 +454,7 @@ deref(static_any_t cur, container<T,C>)
                         ==sizeof(::boost::for_each::yes_type))>())
 
 // Evaluate the container expression, and detect if it is an l-value or and r-value
-# define BOOST_FE_EVAL(COL) (COL)
+# define BOOST_FOREACH_EVAL(COL) (COL)
 
 #endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 
@@ -462,7 +464,7 @@ deref(static_any_t cur, container<T,C>)
 
 #define BOOST_FOREACH_CONTAIN(COL)                                              \
     ::boost::for_each::contain(                                                 \
-        BOOST_FE_EVAL(COL)                                                      \
+        BOOST_FOREACH_EVAL(COL)                                                 \
       , BOOST_FOREACH_RVALUE(COL)                                               \
       , ::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
 
@@ -520,15 +522,15 @@ deref(static_any_t cur, container<T,C>)
 //   BOOST_FOREACH(i, int_list)
 //       { ... }
 //
-#define BOOST_FOREACH(VAR, COL)                                                                 \
-    if       (bool _foreach_rvalue = false) {}                                                  \
-    else if  (::boost::for_each::static_any_t _foreach_col = BOOST_FOREACH_CONTAIN(COL)) {}     \
-    else if  (::boost::for_each::static_any_t _foreach_cur = BOOST_FOREACH_BEGIN(COL)) {}       \
-    else if  (::boost::for_each::static_any_t _foreach_end = BOOST_FOREACH_END(COL)) {}         \
-    else for (bool _foreach_continue = true;                                                    \
-              _foreach_continue && !BOOST_FOREACH_DONE(COL);                                    \
-              _foreach_continue ? BOOST_FOREACH_NEXT(COL) : (void)0)                            \
-         if       (::boost::for_each::set_false(_foreach_continue)) {}                          \
-         else for (VAR = BOOST_FOREACH_DEREF(COL); !_foreach_continue; _foreach_continue = true)
+#define BOOST_FOREACH(VAR, COL)                                                             \
+    if (bool _foreach_rvalue = false) {} else                                               \
+    if (::boost::for_each::static_any_t _foreach_col = BOOST_FOREACH_CONTAIN(COL)) {} else  \
+    if (::boost::for_each::static_any_t _foreach_cur = BOOST_FOREACH_BEGIN(COL)) {} else    \
+    if (::boost::for_each::static_any_t _foreach_end = BOOST_FOREACH_END(COL)) {} else      \
+    for (bool _foreach_continue = true;                                                     \
+              _foreach_continue && !BOOST_FOREACH_DONE(COL);                                \
+              _foreach_continue ? BOOST_FOREACH_NEXT(COL) : (void)0)                        \
+        if  (::boost::for_each::set_false(_foreach_continue)) {} else                       \
+        for (VAR = BOOST_FOREACH_DEREF(COL); !_foreach_continue; _foreach_continue = true)
 
 #endif
