@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+     "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<library
+    id="boost_foreach"
+    name="BOOST_FOREACH"
+    dirname="boost_foreach"
+    last-revision="$Date$" 
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+  <libraryinfo>
+    <author>
+      <firstname>Eric</firstname>
+      <surname>Niebler</surname>
+    </author>
+
+    <copyright>
+      <year>2004</year>
+      <holder>Eric Niebler</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        <ulink url="http://www.boost.org/LICENSE_1_0.txt">
+            http://www.boost.org/LICENSE_1_0.txt
+        </ulink>)
+    
+      </para>
+    </legalnotice>
+
+    <librarypurpose>
+      foreach looping construct, for writing simple loops over STL containers,
+        null-terminated strings, arrays, iterator pairs and user defined types.
+        </librarypurpose>
+
+    <librarycategory name="category:algorithms"></librarycategory>
+
+  </libraryinfo>
+
+  <title>BOOST_FOREACH 1.0</title>
+
+
+
+<section id="boost_foreach.introduction">
+<title>Introduction</title>
+<blockquote><para>Something witty!</para></blockquote><blockquote><para><emphasis role="bold"><emphasis>-- Someone Famous</emphasis></emphasis></para></blockquote><anchor id="introduction.what_is__code__phrase_role__identifier__boost_foreach__phrase___code__" /><bridgehead renderas="sect2">What is <code><phrase role="identifier">BOOST_FOREACH</phrase></code>?</bridgehead><para>
+In C++, writing a loop that iterates over a sequence is tedious. You can either
+use iterators, which requires a considerable amount of boiler-plate, or you can
+use the <code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">for_each</phrase><phrase role="special">()</phrase></code> algorithm and move your loop body into a predicate, which
+requires no less boiler-plate and forces you to move your logic far from where
+it will be used. In contrast, some other languages provide a dedicated &quot;foreach&quot;
+construct that automates this process. <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is just such a construct for C++.
+It iterates over sequences for you, freeing you from having to deal directly with
+iterators or write predicates.</para>
+<para>
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> is designed for ease-of-use and efficiency. It does no dynamic allocations,
+makes no virtual function calls or calls through function pointers, and makes no calls
+that are not transparent to the compiler's optimizer. This results in near-optimal code
+generation; the performance of <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is usually within a few percent of the
+equivalent hand-coded loop. And although <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is a macro, it is a remarkably
+well-behaved one. On modern compilers, it evaluates its arguments exactly once, leading
+to no nasty surprises.</para>
+<anchor id="introduction.hello__world_" /><bridgehead renderas="sect2">Hello, world!</bridgehead><para>
+Below is a sample program that uses <code><phrase role="identifier">BOOST_FOREACH</phrase></code> to loop over the contents of
+a null-terminated C-style string.</para>
+<programlisting>
+<literal>
+<phrase role="preprocessor">#include</phrase><phrase role="special"> &lt;</phrase><phrase role="identifier">iostream</phrase><phrase role="special">&gt;</phrase><phrase role="preprocessor">
+#include</phrase><phrase role="special"> &lt;</phrase><phrase role="identifier">boost</phrase><phrase role="special">/</phrase><phrase role="identifier">foreach</phrase><phrase role="special">.</phrase><phrase role="identifier">hpp</phrase><phrase role="special">&gt;</phrase><phrase role="keyword">
+
+int</phrase><phrase role="identifier"> main</phrase><phrase role="special">()</phrase><phrase role="special">
+{</phrase><phrase role="identifier">
+    BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> char</phrase><phrase role="identifier"> ch</phrase><phrase role="special">,</phrase><phrase role="string"> &quot;Hello, world!&quot;</phrase><phrase role="special"> )</phrase><phrase role="special">
+    {</phrase><phrase role="identifier">
+        std</phrase><phrase role="special">::</phrase><phrase role="identifier">cout</phrase><phrase role="special"> &lt;&lt;</phrase><phrase role="identifier"> ch</phrase><phrase role="special">;</phrase><phrase role="special">
+    }</phrase><phrase role="keyword">
+    return</phrase><phrase role="number"> 0</phrase><phrase role="special">;</phrase><phrase role="special">
+}</phrase>
+</literal>
+</programlisting>
+<para>
+This program outputs the following:</para>
+<programlisting><literal>Hello, world!
+</literal></programlisting><anchor id="introduction.supported_sequence_types" /><bridgehead renderas="sect2">Supported Sequence Types</bridgehead><para>
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> iterates over sequences. But what qualifies as a sequence, exactly? Since
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> is built on top of <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink>, it automatically supports those types which
+<ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> recognizes as sequences. In particular, you can use <code><phrase role="identifier">BOOST_FOREACH</phrase></code> with:</para>
+<itemizedlist>
+<listitem>
+STL containers
+</listitem><listitem>
+arrays
+</listitem><listitem>
+Null-terminated strings (<code><phrase role="keyword">char</phrase></code> and <code><phrase role="keyword">wchar_t</phrase></code>)
+</listitem><listitem>
+std::pair of iterators
+</listitem>
+</itemizedlist><informaltable frame="all">
+<?dbhtml table-width="74%" ?>
+<tgroup cols="1">
+<tbody>
+<row>
+<entry role="blurb">
+<inlinemediaobject><imageobject><imagedata fileref="images/note.png"></imagedata></imageobject></inlinemediaobject> The support for STL containers is very general; anything that looks like
+an STL container counts. If it has nested <code><phrase role="identifier">iterator</phrase></code> and <code><phrase role="identifier">const_iterator</phrase></code> types and <code><phrase role="identifier">begin</phrase><phrase role="special">()</phrase></code>
+and <code><phrase role="identifier">end</phrase><phrase role="special">()</phrase></code> member functions, <code><phrase role="identifier">BOOST_FOREACH</phrase></code> will automatically know how to iterate over
+it. It is in this way that <ulink url="http://boost.org/libs/range/doc/utility_class.html#iter_range"><code><phrase role="identifier">boost</phrase><phrase role="special">::</phrase><phrase role="identifier">iterator_range</phrase><phrase role="special">&lt;&gt;</phrase></code></ulink> and <ulink url="http://boost.org/libs/range/doc/utility_class.html#sub_range"><code><phrase role="identifier">boost</phrase><phrase role="special">::</phrase><phrase role="identifier">sub_range</phrase><phrase role="special">&lt;&gt;</phrase></code></ulink> work with <code><phrase role="identifier">BOOST_FOREACH</phrase></code>.</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>
+See the section on <link linkend="boost_foreach.extending_boost_foreach">Extending <code><phrase role="identifier">BOOST_FOREACH</phrase></code></link> to find
+out how to make <code><phrase role="identifier">BOOST_FOREACH</phrase></code> work with other types.</para>
+<anchor id="introduction.examples" /><bridgehead renderas="sect2">Examples</bridgehead><para>
+Below are some examples that demonstrate all the different ways you can use <code><phrase role="identifier">BOOST_FOREACH</phrase></code>.</para>
+<para>
+Iterate over an STL container:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">list</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> list_int</phrase><phrase role="special">(</phrase><phrase role="comment"> /*...*/</phrase><phrase role="special"> );</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> int</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> list_int</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="comment">
+    // do something with i
+</phrase><phrase role="special">}</phrase>
+</literal>
+</programlisting>
+<para>
+Iterate over an array, with covariance (i.e., the type of the iteration variable is
+not exactly the same as the element type of the container):</para>
+<programlisting>
+<literal>
+<phrase role="keyword">short</phrase><phrase role="identifier"> array_short</phrase><phrase role="special">[]</phrase><phrase role="special"> =</phrase><phrase role="special"> {</phrase><phrase role="number">1</phrase><phrase role="special">,</phrase><phrase role="number">2</phrase><phrase role="special">,</phrase><phrase role="number">3</phrase><phrase role="special">};</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> int</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> array_short</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="comment">
+    // The short was implicitly converted to an int
+</phrase><phrase role="special">}</phrase>
+</literal>
+</programlisting>
+<para>
+Predeclare the loop variable, and use <code><phrase role="keyword">break</phrase></code>, <code><phrase role="keyword">continue</phrase></code>, and <code><phrase role="keyword">return</phrase></code> in the loop body:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">deque</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> deque_int</phrase><phrase role="special">(</phrase><phrase role="comment"> /*...*/</phrase><phrase role="special"> );</phrase><phrase role="keyword">
+int</phrase><phrase role="identifier"> i</phrase><phrase role="special"> =</phrase><phrase role="number"> 0</phrase><phrase role="special">;</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> deque_int</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="keyword">
+    if</phrase><phrase role="special">(</phrase><phrase role="identifier">i</phrase><phrase role="special">==</phrase><phrase role="number">0</phrase><phrase role="special">)</phrase><phrase role="keyword"> return</phrase><phrase role="special">;</phrase><phrase role="keyword">
+    if</phrase><phrase role="special">(</phrase><phrase role="identifier">i</phrase><phrase role="special">==</phrase><phrase role="number">1</phrase><phrase role="special">)</phrase><phrase role="keyword"> continue</phrase><phrase role="special">;</phrase><phrase role="keyword">
+    if</phrase><phrase role="special">(</phrase><phrase role="identifier">i</phrase><phrase role="special">==</phrase><phrase role="number">2</phrase><phrase role="special">)</phrase><phrase role="keyword"> break</phrase><phrase role="special">;</phrase><phrase role="special">
+}</phrase>
+</literal>
+</programlisting>
+<para>
+Iterate over a sequence by reference, and modify the underlying sequence:</para>
+<programlisting>
+<literal>
+<phrase role="keyword">short</phrase><phrase role="identifier"> array_short</phrase><phrase role="special">[]</phrase><phrase role="special"> =</phrase><phrase role="special"> {</phrase><phrase role="number">1</phrase><phrase role="special">,</phrase><phrase role="number">2</phrase><phrase role="special">,</phrase><phrase role="number">3</phrase><phrase role="special">};</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> short</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> array_short</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="special">
+    ++</phrase><phrase role="identifier">i</phrase><phrase role="special">;</phrase><phrase role="special">
+}</phrase><phrase role="comment">
+// array_short contains {2,3,4} here
+</phrase></literal>
+</programlisting>
+<para>
+Iterate over an expression that returns a sequence by value (i.e. an r-value):</para>
+<programlisting>
+<literal>
+<phrase role="keyword">extern</phrase><phrase role="identifier"> std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">float</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> get_vector_float</phrase><phrase role="special">();</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> float</phrase><phrase role="identifier"> f</phrase><phrase role="special">,</phrase><phrase role="identifier"> get_vector_float</phrase><phrase role="special">()</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="comment">
+    // Note: get_vector_float() will be called exactly once
+</phrase><phrase role="special">}</phrase>&nbsp;&nbsp;&nbsp;&nbsp;
+</literal>
+</programlisting>
+<para>
+Iterating over r-values doesn't work on some older compilers. Check the 
+<link linkend="boost_foreach.portability">Portability</link> section to see whether your
+compiler supports this.</para>
+</section>
+<section id="boost_foreach.extending_boost_foreach">
+<title>Extending BOOST_FOREACH</title>
+<para>
+If you want to use <code><phrase role="identifier">BOOST_FOREACH</phrase></code> to iterate over some new collection type, you must
+&quot;teach&quot; <code><phrase role="identifier">BOOST_FOREACH</phrase></code> how to interact with your type. Since <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is built on top
+of <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink>, you must extend <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> in order to extend <code><phrase role="identifier">BOOST_FOREACH</phrase></code>.</para>
+<para>
+Below is an example for extending <code><phrase role="identifier">BOOST_FOREACH</phrase></code> to iterate over a type which wraps a
+<code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase></code>.</para>
+<programlisting>
+<literal>
+<phrase role="keyword">struct</phrase><phrase role="identifier"> StringWrapper</phrase><phrase role="special">
+{</phrase><phrase role="identifier">
+    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="identifier"> str</phrase><phrase role="special">;</phrase><phrase role="special">
+};</phrase><phrase role="keyword">
+
+namespace</phrase><phrase role="identifier"> boost</phrase><phrase role="special">
+{</phrase><phrase role="comment">
+    // specialize rannge_iterator and range_const_iterator
+</phrase><phrase role="keyword">    template</phrase><phrase role="special">&lt;&gt;</phrase><phrase role="keyword">
+    struct</phrase><phrase role="identifier"> range_iterator</phrase><phrase role="special">&lt;</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="special">&gt;</phrase><phrase role="special">
+    {</phrase><phrase role="keyword">
+        typedef</phrase><phrase role="identifier"> std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">iterator</phrase><phrase role="identifier"> type</phrase><phrase role="special">;</phrase><phrase role="special">
+    };</phrase><phrase role="keyword">
+
+    template</phrase><phrase role="special">&lt;&gt;</phrase><phrase role="keyword">
+    struct</phrase><phrase role="identifier"> range_const_iterator</phrase><phrase role="special">&lt;</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="special">&gt;</phrase><phrase role="special">
+    {</phrase><phrase role="keyword">
+        typedef</phrase><phrase role="identifier"> std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> type</phrase><phrase role="special">;</phrase><phrase role="special">
+    };</phrase><phrase role="comment">
+
+    // Overload begin() and end(), both const and non-const versions
+</phrase><phrase role="identifier">    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">iterator</phrase><phrase role="identifier"> begin</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="identifier">
+    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">iterator</phrase><phrase role="identifier"> end</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">end</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="identifier">
+
+    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> begin</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="keyword"> const</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="identifier">
+    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> end</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="keyword"> const</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="special">
+}</phrase>
+</literal>
+</programlisting>
+<para>
+Now that you have taught <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> (and hence <code><phrase role="identifier">BOOST_FOREACH</phrase></code>) about your type, you
+can now use <code><phrase role="identifier">BOOST_FOREACH</phrase></code> to iterate over your type.</para>
+<programlisting>
+<literal>
+<phrase role="identifier">StringWrapper</phrase><phrase role="identifier"> my_string_wrapper</phrase><phrase role="special">;</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> char</phrase><phrase role="identifier"> ch</phrase><phrase role="special">,</phrase><phrase role="identifier"> my_string_wrapper</phrase><phrase role="special"> )</phrase><phrase role="special">
+{</phrase><phrase role="comment">
+    // Woo-hoo!
+</phrase><phrase role="special">}</phrase>
+</literal>
+</programlisting>
+<para>
+There are some portability issues you should be aware of when extending <code><phrase role="identifier">BOOST_FOREACH</phrase></code>. Be sure
+to check out the <link linkend="boost_foreach.portability">Portability</link> section.</para>
+</section>
+<section id="boost_foreach.portability">
+<title>Portability</title>
+<para>
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> uses some fairly sophisticated techniques that not all compilers support. Depending
+on how compliant your compiler is, you may not be able to use <code><phrase role="identifier">BOOST_FOREACH</phrase></code> in some scenarios. Since
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> uses <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink>, it inherits <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink>'s portability issues. You can read about those
+issues in that library's <ulink url="http://boost.org/libs/range/doc/portability.html">Portability</ulink>
+section.</para>
+<para>
+In addition to the demands placed on the compiler by <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink>, <code><phrase role="identifier">BOOST_FOREACH</phrase></code> places additional demands
+in order to handle r-value sequences properly. (Recall that an r-value is an unnamed object, so
+an example of an r-value sequence would be a function that returns a <code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;&gt;</phrase></code> by value.) Compilers
+vary in their handling of r-values and l-values. To cope with the situation <code><phrase role="identifier">BOOST_FOREACH</phrase></code> defines three
+levels of compliance, described below:</para>
+<itemizedlist>
+<listitem>
+<emphasis>Level 0 - Highest level of compliance</emphasis>: <code><phrase role="identifier">BOOST_FOREACH</phrase></code> works with l-values, r-values and
+  const-qualified r-values.
+</listitem><listitem>
+<emphasis>Level 1 - Moderate level of compliance</emphasis>: <code><phrase role="identifier">BOOST_FOREACH</phrase></code> works with l-values and plain r-values,
+  but not const-qualified r-values. (BOOST_FOREACH_NO_CONST_RVALUE_DETECTION is defined in this case.)
+</listitem><listitem>
+<emphasis>Level 2 - Lowest level of compliance</emphasis>: <code><phrase role="identifier">BOOST_FOREACH</phrase></code> works with l-values only, not r-values.
+  (BOOST_FOREACH_NO_RVALUE_DETECTION is defined in this case.)
+</listitem>
+</itemizedlist><para>
+Below are the compilers <code><phrase role="identifier">BOOST_FOREACH</phrase></code> has been tested with, and the compliance level you can expect
+from each.</para>
+<informaltable frame="all">
+<bridgehead renderas="sect4"><phrase role="table-title">Compiler Compliance Level</phrase></bridgehead>
+<tgroup cols="2">
+<thead><row><entry>Compiler</entry><entry>Compliance Level</entry></row>
+</thead>
+<tbody>
+<row><entry>Visual C++ 7.1</entry><entry>Level 1</entry></row>
+<row><entry>Visual C++ Whidbey Beta</entry><entry>Level 1</entry></row>
+<row><entry>Visual C++ 7.0</entry><entry>Level 2</entry></row>
+<row><entry>Visual C++ 6.0</entry><entry>Level 2</entry></row>
+<row><entry>gcc 3.3.3</entry><entry>Level 0</entry></row>
+<row><entry>Intel for Windows 8.0</entry><entry>Level 1</entry></row>
+<row><entry>Intel for Windows 7.0</entry><entry>Level 2</entry></row>
+<row><entry>Comeau 4.3.3</entry><entry>Level 0</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>
+Also, if your compiler is one for which the Boost config system defines BOOST_NO_FUNCTION_TEMPLATE_ORDERING,
+then the compliance level for the <code><phrase role="identifier">BOOST_FOREACH</phrase></code> macro is Level 2, the lowest.</para>
+</section>
+<section id="boost_foreach.acknowledgements">
+<title>Acknowledgements</title>
+<para>
+<code><phrase role="identifier">BOOST_FOREACH</phrase></code> wouldn't have been possible without the help and incessant prodding of Anson Tsao at
+Microsoft, with whom I co-authored an article for the November 2003 issue of the <ulink url="http://www.cuj.com">CUJ</ulink>.
+I would also like to thank <ulink url="http://boost.org/people/thorsten_ottosen.html">Thorsten Ottosen</ulink> for
+the <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> library, on which the current version of <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is built.</para>
+</section>
+</library>
+
