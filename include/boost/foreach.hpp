@@ -521,7 +521,7 @@ deref(static_any_t cur, container<T,C>)
 
 // Can't use R-values with BOOST_FOREACH
 # define BOOST_FOREACH_RVALUE(COL)                                              \
-    (mpl::false_())
+    (::boost::mpl::false_())
 
 # define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
     (::boost::mpl::false_())
