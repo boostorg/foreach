@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // int_iterator
 //
-typedef ::boost::counting_iterator<int> int_iterator;
+typedef boost::counting_iterator<int> int_iterator;
 
 ///////////////////////////////////////////////////////////////////////////////
 // define come containers
@@ -67,8 +67,8 @@ template<typename Range>
 std::vector<int> to_vector_for( Range & rng )
 {
     std::vector<int> vect;
-    typedef typename ::boost::range_result_iterator<Range>::type iterator;
-    for(iterator begin = ::boost::begin(rng), end = ::boost::end(rng);
+    typedef BOOST_DEDUCED_TYPENAME boost::range_result_iterator<Range>::type iterator;
+    for(iterator begin = boost::begin(rng), end = boost::end(rng);
         begin != end; ++begin)
     {
         vect.push_back(*begin);
@@ -83,8 +83,8 @@ template<typename Range>
 std::vector<int> to_vector_foreach_byval( Range & rng )
 {
     std::vector<int> vect;
-    typedef typename ::boost::range_result_iterator<Range>::type iterator;
-    typedef typename ::boost::iterator_value<iterator>::type value;
+    typedef BOOST_DEDUCED_TYPENAME boost::range_result_iterator<Range>::type iterator;
+    typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<iterator>::type value;
     BOOST_FOREACH( value i, rng )
     {
         vect.push_back(i);
@@ -99,8 +99,8 @@ template<typename Range>
 std::vector<int> to_vector_foreach_byref( Range & rng )
 {
     std::vector<int> vect;
-    typedef typename ::boost::range_result_iterator<Range>::type iterator;
-    typedef typename ::boost::iterator_reference<iterator>::type reference;
+    typedef BOOST_DEDUCED_TYPENAME boost::range_result_iterator<Range>::type iterator;
+    typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<iterator>::type reference;
     BOOST_FOREACH( reference i, rng )
     {
         vect.push_back(i);
@@ -114,8 +114,8 @@ std::vector<int> to_vector_foreach_byref( Range & rng )
 template<typename Range>
 void mutate_foreach_byref( Range & rng )
 {
-    typedef typename ::boost::range_result_iterator<Range>::type iterator;
-    typedef typename ::boost::iterator_reference<iterator>::type reference;
+    typedef BOOST_DEDUCED_TYPENAME boost::range_result_iterator<Range>::type iterator;
+    typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<iterator>::type reference;
     BOOST_FOREACH( reference i, rng )
     {
         ++i;
