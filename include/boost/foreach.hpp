@@ -14,17 +14,28 @@
 
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
-#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))             \
+
+// Some compilers allow temporaries to be bound to non-const references.
+// These compilers make it impossible to for BOOST_FOREACH to detect
+// temporaries and avoid reevaluation of the container expression.
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
+# define BOOST_FOREACH_NO_RVALUE_DETECTION
+#endif
+
+// Some compilers do not correctly implement the L-value/R-value conversion
+// rules of the ternary conditional operator.
+#if defined(BOOST_FOREACH_NO_RVALUE_DETECTION)                      \
+ || BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))             \
  || BOOST_WORKAROUND(BOOST_INTEL_WIN, BOOST_TESTED_AT(800))
 # define BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 #endif
 
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/eval_if.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/begin.hpp>
 #include <boost/range/result_iterator.hpp>
 #include <boost/iterator/iterator_traits.hpp>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 # include <new>
@@ -229,7 +240,7 @@ private:
     mutable aligned_storage<size>   data;
 };
 
-#else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+#elif !defined(BOOST_FOREACH_NO_RVALUE_DETECTION)
 
 ///////////////////////////////////////////////////////////////////////////////
 // yes/no
@@ -439,29 +450,71 @@ deref(static_any_t cur, container<T,C>)
 } // namespace for_each
 } // namespace boost
 
-
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+///////////////////////////////////////////////////////////////////////////////
+// R-values and const R-values supported here
+///////////////////////////////////////////////////////////////////////////////
 
-# define BOOST_FOREACH_RVALUE(COL) _foreach_rvalue
+// A sneaky way to get the type of the collection without evaluating the expression
+# define BOOST_FOREACH_TYPEOF(COL)                                              \
+    (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
+
+// The R-value/L-value-ness of the collection expression is determined dynamically
+# define BOOST_FOREACH_RVALUE(COL)                                              \
+    _foreach_rvalue
 
 // Evaluate the container expression, and detect if it is an l-value or and r-value
 # define BOOST_FOREACH_EVAL(COL)                                                \
     (true ? ::boost::for_each::rvalue_probe((COL),_foreach_rvalue) : (COL))
 
-#else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+# define BOOST_FOREACH_NOOP(COL)                                                \
+    ((void)0)
 
+#elif !defined(BOOST_FOREACH_NO_RVALUE_DETECTION)
+///////////////////////////////////////////////////////////////////////////////
+// R-values supported here, const R-values NOT supported here
+///////////////////////////////////////////////////////////////////////////////
+
+// A sneaky way to get the type of the collection without evaluating the expression
+# define BOOST_FOREACH_TYPEOF(COL)                                              \
+    (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
+
+// Determine whether the container expression is an l-value or an r-value.
+// NOTE: this gets the answer for const R-values wrong.
 # define BOOST_FOREACH_RVALUE(COL)                                              \
     (::boost::mpl::bool_<(sizeof(::boost::for_each::is_rvalue((COL),0))         \
                         ==sizeof(::boost::for_each::yes_type))>())
 
-// Evaluate the container expression, and detect if it is an l-value or and r-value
-# define BOOST_FOREACH_EVAL(COL) (COL)
+// Evaluate the container expression
+# define BOOST_FOREACH_EVAL(COL)                                                \
+    (COL)
 
-#endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+# define BOOST_FOREACH_NOOP(COL)                                                \
+    ((void)0)
 
-// A sneaky way to get the type of the collection without evaluating the expression
-#define BOOST_FOREACH_TYPEOF(COL)                                               \
-    (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
+#else
+///////////////////////////////////////////////////////////////////////////////
+// R-values NOT supported here
+///////////////////////////////////////////////////////////////////////////////
+
+// Cannot find the type of the collection expression without evaluating it :-(
+# define BOOST_FOREACH_TYPEOF(COL)                                              \
+    (::boost::for_each::wrap(COL))
+
+// Can't use R-values with BOOST_FOREACH
+# define BOOST_FOREACH_RVALUE(COL)                                              \
+    (mpl::false_())
+
+// Evaluate the container expression
+# define BOOST_FOREACH_EVAL(COL)                                                \
+    (COL)
+
+// Attempt to make uses of BOOST_FOREACH with non-lvalues fail to compile
+# define BOOST_FOREACH_NOOP(COL)                                                \
+    ((void)&(COL))
+
+#endif
+
 
 #define BOOST_FOREACH_CONTAIN(COL)                                              \
     ::boost::for_each::contain(                                                 \
@@ -495,7 +548,9 @@ deref(static_any_t cur, container<T,C>)
       , BOOST_FOREACH_TYPEOF(COL))
 
 #define BOOST_FOREACH_DEREF(COL)                                                \
-    ::boost::for_each::deref(_foreach_cur, BOOST_FOREACH_TYPEOF(COL))
+    ::boost::for_each::deref(                                                   \
+        _foreach_cur                                                            \
+      , BOOST_FOREACH_TYPEOF(COL))
 
 ///////////////////////////////////////////////////////////////////////////////
 // BOOST_FOREACH
@@ -530,7 +585,7 @@ deref(static_any_t cur, container<T,C>)
     if (::boost::for_each::static_any_t _foreach_end = BOOST_FOREACH_END(COL)) {} else      \
     for (bool _foreach_continue = true;                                                     \
               _foreach_continue && !BOOST_FOREACH_DONE(COL);                                \
-              _foreach_continue ? BOOST_FOREACH_NEXT(COL) : (void)0)                        \
+              _foreach_continue ? BOOST_FOREACH_NEXT(COL) : BOOST_FOREACH_NOOP(COL))        \
         if  (::boost::for_each::set_false(_foreach_continue)) {} else                       \
         for (VAR = BOOST_FOREACH_DEREF(COL); !_foreach_continue; _foreach_continue = true)
 
