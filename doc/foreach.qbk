@@ -247,7 +247,7 @@ from each.
   [[Comeau 4.3.3]            [Level 0]]
 ]
 
-Also, if your compiler is one for which the Boost config system defines BOOST_NO_FUNCTION_TEMPLATE_ORDERING,
+Also, if your compiler is one for which the Boost config system defines `BOOST_NO_FUNCTION_TEMPLATE_ORDERING`,
 then the compliance level for the _foreach_ macro is Level 2, the lowest.
 
 [endsect]

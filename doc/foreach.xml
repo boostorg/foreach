@@ -293,7 +293,7 @@ from each.</para>
 </tgroup>
 </informaltable>
 <para>
-Also, if your compiler is one for which the Boost config system defines BOOST_NO_FUNCTION_TEMPLATE_ORDERING,
+Also, if your compiler is one for which the Boost config system defines <code><phrase role="identifier">BOOST_NO_FUNCTION_TEMPLATE_ORDERING</phrase></code>,
 then the compliance level for the <code><phrase role="identifier">BOOST_FOREACH</phrase></code> macro is Level 2, the lowest.</para>
 </section>
 <section id="boost_foreach.acknowledgements">
