@@ -23,16 +23,16 @@ typedef ::boost::counting_iterator<int> int_iterator;
 ///////////////////////////////////////////////////////////////////////////////
 // define come containers
 //
-char ntcs_buffer[] = "\1\2\3\4\5";
-char *ntcs  = ntcs_buffer;
-int array[] = { 1,2,3,4,5 };
-std::list<int> list(int_iterator(1),int_iterator(6));
-std::pair<int_iterator,int_iterator> pair(int_iterator(1),int_iterator(6));
+char my_ntcs_buffer[] = "\1\2\3\4\5";
+char *my_ntcs  = my_ntcs_buffer;
+int my_array[] = { 1,2,3,4,5 };
+std::list<int> my_list(int_iterator(1),int_iterator(6));
+std::pair<int_iterator,int_iterator> my_pair(int_iterator(1),int_iterator(6));
 
-int const (&const_array)[5] = array;
-char const *const_ntcs  = ntcs;
-std::list<int> const &const_list = list;
-std::pair<int_iterator,int_iterator> const &const_pair = pair;
+int const (&my_const_array)[5] = my_array;
+char const *my_const_ntcs  = my_ntcs;
+std::list<int> const &my_const_list = my_list;
+std::pair<int_iterator,int_iterator> const &my_const_pair = my_pair;
 
 ///////////////////////////////////////////////////////////////////////////////
 // define a user-defined collection type and teach BOOST_FOREACH how to enumerate it
@@ -129,39 +129,39 @@ void mutate_foreach_byref( Range & rng )
 int test_main( int, char*[] )
 {
     // non-const containers by value
-    BOOST_CHECK(to_vector_foreach_byval(array) == to_vector_for(array));
-    BOOST_CHECK(to_vector_foreach_byval(ntcs)  == to_vector_for(ntcs));
-    BOOST_CHECK(to_vector_foreach_byval(list)  == to_vector_for(list));
-    BOOST_CHECK(to_vector_foreach_byval(pair)  == to_vector_for(pair));
+    BOOST_CHECK(to_vector_foreach_byval(my_array) == to_vector_for(my_array));
+    BOOST_CHECK(to_vector_foreach_byval(my_ntcs)  == to_vector_for(my_ntcs));
+    BOOST_CHECK(to_vector_foreach_byval(my_list)  == to_vector_for(my_list));
+    BOOST_CHECK(to_vector_foreach_byval(my_pair)  == to_vector_for(my_pair));
 
     // const containers by value
-    BOOST_CHECK(to_vector_foreach_byval(const_array) == to_vector_for(const_array));
-    BOOST_CHECK(to_vector_foreach_byval(const_ntcs)  == to_vector_for(const_ntcs));
-    BOOST_CHECK(to_vector_foreach_byval(const_list)  == to_vector_for(const_list));
-    BOOST_CHECK(to_vector_foreach_byval(const_pair)  == to_vector_for(const_pair));
+    BOOST_CHECK(to_vector_foreach_byval(my_const_array) == to_vector_for(my_const_array));
+    BOOST_CHECK(to_vector_foreach_byval(my_const_ntcs)  == to_vector_for(my_const_ntcs));
+    BOOST_CHECK(to_vector_foreach_byval(my_const_list)  == to_vector_for(my_const_list));
+    BOOST_CHECK(to_vector_foreach_byval(my_const_pair)  == to_vector_for(my_const_pair));
 
     // non-const containers by reference
-    BOOST_CHECK(to_vector_foreach_byref(array) == to_vector_for(array));
-    BOOST_CHECK(to_vector_foreach_byref(ntcs)  == to_vector_for(ntcs));
-    BOOST_CHECK(to_vector_foreach_byref(list)  == to_vector_for(list));
-    BOOST_CHECK(to_vector_foreach_byref(pair)  == to_vector_for(pair));
+    BOOST_CHECK(to_vector_foreach_byref(my_array) == to_vector_for(my_array));
+    BOOST_CHECK(to_vector_foreach_byref(my_ntcs)  == to_vector_for(my_ntcs));
+    BOOST_CHECK(to_vector_foreach_byref(my_list)  == to_vector_for(my_list));
+    BOOST_CHECK(to_vector_foreach_byref(my_pair)  == to_vector_for(my_pair));
 
     // const containers by reference
-    BOOST_CHECK(to_vector_foreach_byref(const_array) == to_vector_for(const_array));
-    BOOST_CHECK(to_vector_foreach_byref(const_ntcs)  == to_vector_for(const_ntcs));
-    BOOST_CHECK(to_vector_foreach_byref(const_list)  == to_vector_for(const_list));
-    BOOST_CHECK(to_vector_foreach_byref(const_pair)  == to_vector_for(const_pair));
+    BOOST_CHECK(to_vector_foreach_byref(my_const_array) == to_vector_for(my_const_array));
+    BOOST_CHECK(to_vector_foreach_byref(my_const_ntcs)  == to_vector_for(my_const_ntcs));
+    BOOST_CHECK(to_vector_foreach_byref(my_const_list)  == to_vector_for(my_const_list));
+    BOOST_CHECK(to_vector_foreach_byref(my_const_pair)  == to_vector_for(my_const_pair));
 
     // mutate the mutable collections
-    mutate_foreach_byref(array);
-    mutate_foreach_byref(ntcs);
-    mutate_foreach_byref(list);
+    mutate_foreach_byref(my_array);
+    mutate_foreach_byref(my_ntcs);
+    mutate_foreach_byref(my_list);
 
     // compare the mutated collections to the actual results
     std::pair<int_iterator,int_iterator> results(int_iterator(2),int_iterator(7));
-    BOOST_CHECK(to_vector_foreach_byval(array) == to_vector_for(results));
-    BOOST_CHECK(to_vector_foreach_byval(ntcs)  == to_vector_for(results));
-    BOOST_CHECK(to_vector_foreach_byval(list)  == to_vector_for(results));
+    BOOST_CHECK(to_vector_foreach_byval(my_array) == to_vector_for(results));
+    BOOST_CHECK(to_vector_foreach_byval(my_ntcs)  == to_vector_for(results));
+    BOOST_CHECK(to_vector_foreach_byval(my_list)  == to_vector_for(results));
 
     // loop over a user-defined type (just make sure this compiles)
     mine::dummy d;
