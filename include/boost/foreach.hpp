@@ -141,11 +141,23 @@ struct type2type
 template<typename T,typename C = mpl::false_>
 struct foreach_iterator
 {
+    // If there is no function template ordering, then it may
+    // be impossible to strip cv-modifiers from T, so use
+    // range_result_iterator. Otherwise, use range_const_iterator
+    // and range_iterator.
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
     typedef BOOST_DEDUCED_TYPENAME mpl::eval_if<
         C
-      , range_result_iterator<T const>
-      , range_result_iterator<T>
+        , range_const_iterator<T>
+        , range_iterator<T>
     >::type type;
+#else
+    typedef BOOST_DEDUCED_TYPENAME mpl::eval_if<
+        C
+        , range_result_iterator<T const>
+        , range_result_iterator<T>
+    >::type type;
+#endif
 };
 
 template<typename T,typename C = mpl::false_>
