@@ -172,6 +172,14 @@ typedef mpl::false_ lvalue;
 #endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 
 ///////////////////////////////////////////////////////////////////////////////
+// set_false
+//
+inline bool set_false( bool &b )
+{
+    return b = false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // selectors
 //
 typedef char (&stl_container)[1];
@@ -513,7 +521,7 @@ struct traits<sizeof(iterator_range)>
     else for (bool _foreach_continue = true;                                                                                                    \
                _foreach_continue && !_foreach_tr.done(_foreach_cur, _foreach_end, BOOST_FE_TYPEOF(COL));                                        \
                _foreach_continue ? _foreach_tr.next(_foreach_cur, BOOST_FE_TYPEOF(COL)) : (void)0)                                              \
-         if       (_foreach_continue = false) {}                                                                                                \
+         if       (::boost::for_each::set_false(_foreach_continue)) {}                                                                          \
          else for (VAR = _foreach_tr.extract(_foreach_cur, BOOST_FE_TYPEOF(COL));                                                               \
                    !_foreach_continue; _foreach_continue = true)
 
