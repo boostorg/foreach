@@ -31,6 +31,7 @@
 #if defined(BOOST_FOREACH_NO_RVALUE_DETECTION)                                                  \
  || BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))                                         \
  || BOOST_WORKAROUND(BOOST_INTEL_WIN, BOOST_TESTED_AT(800))                                     \
+ || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))                                      \
  || BOOST_WORKAROUND(BOOST_FOREACH_GNUC, <= 302)     // GCC 3.2 and below
 # define BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 #endif
