@@ -287,26 +287,21 @@ struct traits<sizeof(stl_container)>
     template<typename T>
     static static_any<simple_variant<T const> > contain(T const &t, bool const &rvalue)
     {
-        typedef simple_variant<T const> var_type;
-        return rvalue ? var_type(t) : var_type(&t);
+        return rvalue ? simple_variant<T const>(t) : simple_variant<T const>(&t);
     }
 
     template<typename T>
     static static_any<typename range_result_iterator<T>::type>
     begin(static_any_t col, wrap_type<T>, bool)
     {
-        typedef simple_variant<T> var_type;
-        var_type &var = static_any_cast<var_type>(col);
-        return var.get()->begin();
+        return static_any_cast<simple_variant<T> >(col).get()->begin();
     }
 
     template<typename T>
     static static_any<typename range_result_iterator<T>::type>
     end(static_any_t col, wrap_type<T>, bool)
     {
-        typedef simple_variant<T> var_type;
-        var_type &var = static_any_cast<var_type>(col);
-        return var.get()->end();
+        return static_any_cast<simple_variant<T> >(col).get()->end();
     }
 
 #else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
