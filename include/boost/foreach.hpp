@@ -314,7 +314,7 @@ struct traits<sizeof(stl_container)>
 
     template<typename T>
     static typename std::iterator_traits<typename range_result_iterator<T>::type>::reference
-    extract(static_any_t cur, wrap_type<T>)
+    deref(static_any_t cur, wrap_type<T>)
     {
         typedef typename range_result_iterator<T>::type iter_t;
         return *static_any_cast<iter_t>(cur);
@@ -361,7 +361,7 @@ struct traits<sizeof(native_array)>
     }
 
     template<typename T, std::size_t N>
-    static T &extract(static_any_t cur, wrap_type<T[N]>)
+    static T &deref(static_any_t cur, wrap_type<T[N]>)
     {
         return *static_any_cast<T *>(cur);
     }
@@ -407,7 +407,7 @@ struct traits<sizeof(c_style_string)>
     }
 
     template<typename T>
-    static T &extract(static_any_t cur, wrap_type<T *>)
+    static T &deref(static_any_t cur, wrap_type<T *>)
     {
         return *static_any_cast<T *>(cur);
     }
@@ -454,7 +454,7 @@ struct traits<sizeof(iterator_range)>
 
     template<typename T>
     static typename std::iterator_traits<T>::reference 
-    extract(static_any_t cur, wrap_type<std::pair<T,T> >)
+    deref(static_any_t cur, wrap_type<std::pair<T,T> >)
     {
         return *static_any_cast<T>(cur);
     }
@@ -523,7 +523,7 @@ struct traits<sizeof(iterator_range)>
                _foreach_continue && !_foreach_tr.done(_foreach_cur, _foreach_end, BOOST_FE_TYPEOF(COL));                                        \
                _foreach_continue ? _foreach_tr.next(_foreach_cur, BOOST_FE_TYPEOF(COL)) : (void)0)                                              \
          if       (::boost::for_each::set_false(_foreach_continue)) {}                                                                          \
-         else for (VAR = _foreach_tr.extract(_foreach_cur, BOOST_FE_TYPEOF(COL));                                                               \
+         else for (VAR = _foreach_tr.deref(_foreach_cur, BOOST_FE_TYPEOF(COL));                                                                 \
                    !_foreach_continue; _foreach_continue = true)
 
 #endif
