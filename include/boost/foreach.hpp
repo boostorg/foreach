@@ -18,7 +18,7 @@
 // Some compilers allow temporaries to be bound to non-const references.
 // These compilers make it impossible to for BOOST_FOREACH to detect
 // temporaries and avoid reevaluation of the collection expression.
-#ifdef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
 # define BOOST_FOREACH_NO_RVALUE_DETECTION
 #endif
 
@@ -30,12 +30,14 @@
 # define BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 #endif
 
-#include <boost/mpl/if.hpp>
+#include <boost/mpl/or.hpp>
 #include <boost/mpl/bool.hpp>
+#include <boost/mpl/eval_if.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/result_iterator.hpp>
 #include <boost/type_traits/is_const.hpp>
+#include <boost/type_traits/is_pointer.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
@@ -56,6 +58,12 @@ class sub_range;
 
 namespace foreach
 {
+
+///////////////////////////////////////////////////////////////////////////////
+// yes/no
+//
+typedef char yes_type;
+typedef char (&no_type)[2];
 
 ///////////////////////////////////////////////////////////////////////////////
 // adl_begin/adl_end
@@ -132,8 +140,12 @@ struct type2type
 
 template<typename T,typename C = mpl::false_>
 struct foreach_iterator
-    : mpl::if_<C,range_const_iterator<T>,range_iterator<T> >::type
 {
+    typedef BOOST_DEDUCED_TYPENAME mpl::eval_if<
+        C
+      , range_result_iterator<T const>
+      , range_result_iterator<T>
+    >::type type;
 };
 
 template<typename T,typename C = mpl::false_>
@@ -142,28 +154,21 @@ struct foreach_reference
 {
 };
 
-#ifndef BOOST_FOREACH_NO_RVALUE_DETECTION
-
+///////////////////////////////////////////////////////////////////////////////
+// encode_type
+//
 template<typename T>
 inline type2type<T> *encode_type(T &)
 {
     return 0;
 }
 
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
 template<typename T>
 inline type2type<T,const_> *encode_type(T const &)
 {
     return 0;
 }
-
-#else
-
-template<typename T>
-inline type2type<T,mpl::bool_<is_const<T>::value> > *encode_type(T &)
-{
-    return 0;
-}
-
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -257,12 +262,6 @@ private:
 #elif !defined(BOOST_FOREACH_NO_RVALUE_DETECTION)
 
 ///////////////////////////////////////////////////////////////////////////////
-// yes/no
-//
-typedef char yes_type;
-typedef char (&no_type)[2];
-
-///////////////////////////////////////////////////////////////////////////////
 // is_rvalue
 //
 template<typename T>
@@ -281,28 +280,40 @@ inline bool set_false(bool &b)
     return b = false;
 }
 
-#ifndef BOOST_FOREACH_NO_RVALUE_DETECTION
+no_type is_range_impl(...);
+
+template<typename T>
+yes_type is_range_impl(std::pair<T,T> *);
+
+template<typename T>
+yes_type is_range_impl(iterator_range<T> *);
+
+template<typename T>
+yes_type is_range_impl(sub_range<T> *);
+
+template<typename T>
+struct is_range
+    : mpl::bool_<sizeof(yes_type)==sizeof(boost::foreach::is_range_impl(static_cast<T*>(0)))>
+{
+};
+
+template<typename T>
+struct is_cheap_copy
+    : mpl::or_<is_pointer<T>, is_range<T> >
+{
+    // work-around for VC6
+    enum { value = mpl::or_< is_pointer<T>, is_range<T> >::value };
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // cheap_copy
 //   Overload this for user-defined collection types if they are inexpensive to copy.
 //   This tells BOOST_FOREACH it can avoid the r-value/l-value detection stuff.
 template<typename T,typename C>
-inline mpl::false_ cheap_copy(type2type<T,C> *) { return mpl::false_(); }
-
-template<typename T,typename C>
-inline mpl::true_ cheap_copy(type2type<std::pair<T,T>,C> *) { return mpl::true_(); }
-
-template<typename T,typename C>
-inline mpl::true_ cheap_copy(type2type<T *,C> *) { return mpl::true_(); }
-
-template<typename T,typename C>
-inline mpl::true_ cheap_copy(type2type<iterator_range<T>,C> *) { return mpl::true_(); }
-
-template<typename T,typename C>
-inline mpl::true_ cheap_copy(type2type<sub_range<T>,C> *) { return mpl::true_(); }
-
-#endif
+inline mpl::bool_<is_cheap_copy<T>::value> cheap_copy(type2type<T,C> *)
+{
+    return mpl::bool_<is_cheap_copy<T>::value>();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // contain
@@ -525,9 +536,9 @@ deref(auto_any_t cur, type2type<T,C> *)
 // R-values NOT supported here
 ///////////////////////////////////////////////////////////////////////////////
 
-// Cannot find the type of the collection expression without evaluating it :-(
+// A sneaky way to get the type of the collection without evaluating the expression
 # define BOOST_FOREACH_TYPEOF(COL)                                              \
-    (::boost::foreach::encode_type(COL))
+    (true ? 0 : ::boost::foreach::encode_type(COL))
 
 // Evaluate the collection expression
 # define BOOST_FOREACH_EVAL(COL)                                                \
@@ -538,7 +549,7 @@ deref(auto_any_t cur, type2type<T,C> *)
     (::boost::mpl::false_())
 
 # define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
-    (::boost::mpl::false_())
+    (::boost::foreach::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
 
 // Attempt to make uses of BOOST_FOREACH with non-lvalues fail to compile
 # define BOOST_FOREACH_NOOP(COL)                                                \
