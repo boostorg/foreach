@@ -598,7 +598,7 @@ deref(auto_any_t cur, type2type<T,C> *)
 
 // Can't use R-values with BOOST_FOREACH
 # define BOOST_FOREACH_RVALUE(COL)                                                              \
-    (::boost::mpl::false_())
+    (static_cast<::boost::mpl::false_ *>(0))
 
 # define BOOST_FOREACH_CHEAP_COPY(COL)                                                          \
     (::boost::foreach_detail_::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
