@@ -36,8 +36,8 @@
 
 [section Introduction]
 
-[:Something witty!]
-[:[*['-- Someone Famous]]]
+[:"Make simple things easy."]
+[:[*['-- Larry Wall]]]
 
 [h2 What is _foreach_?]
 

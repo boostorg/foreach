@@ -44,7 +44,7 @@
 
 <section id="boost_foreach.introduction">
 <title>Introduction</title>
-<blockquote><para>Something witty!</para></blockquote><blockquote><para><emphasis role="bold"><emphasis>-- Someone Famous</emphasis></emphasis></para></blockquote><anchor id="introduction.what_is__code__phrase_role__identifier__boost_foreach__phrase___code__" /><bridgehead renderas="sect2">What is <code><phrase role="identifier">BOOST_FOREACH</phrase></code>?</bridgehead><para>
+<blockquote><para>&quot;Make simple things easy.&quot;</para></blockquote><blockquote><para><emphasis role="bold"><emphasis>-- Larry Wall</emphasis></emphasis></para></blockquote><anchor id="introduction.what_is__code__phrase_role__identifier__boost_foreach__phrase___code__" /><bridgehead renderas="sect2">What is <code><phrase role="identifier">BOOST_FOREACH</phrase></code>?</bridgehead><para>
 In C++, writing a loop that iterates over a sequence is tedious. You can either
 use iterators, which requires a considerable amount of boiler-plate, or you can
 use the <code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">for_each</phrase><phrase role="special">()</phrase></code> algorithm and move your loop body into a predicate, which
