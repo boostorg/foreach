@@ -52,7 +52,7 @@ struct static_any : static_any_base
 typedef static_any_base const &static_any_t;
 
 template<typename T>
-typename T &static_any_cast(static_any_t a)
+T &static_any_cast(static_any_t a)
 {
     return static_cast<static_any<T> const &>(a).item;
 }
