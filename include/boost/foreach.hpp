@@ -11,10 +11,30 @@
 #include <cstddef>
 #include <utility>  // for std::pair
 #include <iterator> // for std::iterator_traits
-#include <boost/mpl/bool.hpp>
+
+#include <boost/config.hpp>
+#include <boost/detail/workaround.hpp>
+#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1310))
+# define BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+#endif
+
+#include <boost/mpl/has_xxx.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/range/result_iterator.hpp>
 
+#ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+# include <boost/variant/variant.hpp>
+# include <boost/variant/get.hpp>
+#else
+# include <boost/mpl/bool.hpp>
+#endif
+
 namespace boost { namespace for_each {
+
+///////////////////////////////////////////////////////////////////////////////
+// has_iterator<>
+//
+BOOST_MPL_HAS_XXX_TRAIT_DEF(iterator)
 
 ///////////////////////////////////////////////////////////////////////////////
 // yes/no
@@ -104,6 +124,53 @@ std::pair<T,T> in_range(T begin, T end)
     return std::make_pair(begin, end);
 }
 
+#ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
+///////////////////////////////////////////////////////////////////////////////
+// rvalue_probe
+//
+struct rvalue_probe
+{
+    template<typename T>
+    rvalue_probe(T const &t, bool &b)
+        : ptemp(const_cast<T*>(&t))
+        , rvalue(b)
+    {
+    }
+
+    template<typename U>
+    operator U ()
+    {
+        rvalue = true;
+        return *static_cast<U*>(ptemp);
+    }
+
+    template<typename V>
+    operator V & () const
+    {
+        return *static_cast<V*>(ptemp);
+    }
+
+    void *ptemp;
+    bool &rvalue;
+};
+
+#else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
+///////////////////////////////////////////////////////////////////////////////
+// is_rvalue
+//
+template<typename T>
+no_type is_rvalue(T &, int);
+
+template<typename T>
+yes_type is_rvalue(T, ...);
+
+typedef mpl::true_  rvalue;
+typedef mpl::false_ lvalue;
+
+#endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
 ///////////////////////////////////////////////////////////////////////////////
 // selectors
 //
@@ -114,42 +181,19 @@ typedef char (&iterator_range)[4];
 typedef char (&unknown_type)[16];
 
 template<typename T>
-stl_container select(T, typename T::iterator *);
+stl_container select(T, typename enable_if<has_iterator<T>,int>::type);
 
 template<typename T, std::size_t N>
-native_array select(T (&)[N], void *);
+native_array select(T (&)[N], int);
 
 template<typename T>
-iterator_range select(std::pair<T,T>, void *);
+iterator_range select(std::pair<T,T>, int);
 
 template<typename T>
 unknown_type select(T, ...);
 
 c_style_string select(char const *, ...);
 c_style_string select(wchar_t const *, ...);
-
-///////////////////////////////////////////////////////////////////////////////
-// is_lvalue
-//
-template<typename T>
-yes_type is_lvalue(T &, int);
-
-template<typename T>
-no_type is_lvalue(T, ...);
-
-typedef mpl::true_  lvalue;
-typedef mpl::false_ rvalue;
-
-///////////////////////////////////////////////////////////////////////////////
-// value
-//   for converting a const rvalue to a non-const, so that BOOST_FOREACH can
-//   know to save a copy
-//
-template<typename T>
-inline T value(T const &t)
-{
-    return t;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // traits
@@ -165,6 +209,41 @@ struct traits<sizeof(stl_container)>
 {
     traits(int) {}
     operator bool() const { return false; }
+
+#ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
+    template<typename T>
+    static static_any<variant<T *,T> > contain(T &t, bool const &)
+    {
+        return variant<T *,T>(&t);
+    }
+
+    template<typename T>
+    static static_any<variant<T const *,T const> > contain(T const &t, bool const &rvalue)
+    {
+        typedef variant<T const *,T const> var_type;
+        return rvalue ? var_type(t) : var_type(&t);
+    }
+
+    template<typename T>
+    static static_any<typename range_result_iterator<T>::type>
+    begin(static_any_t col, wrap_type<T>, bool rvalue)
+    {
+        typedef variant<T *,T> var_type;
+        var_type &var = static_any_cast<var_type>(col);
+        return rvalue ? get<T>(var).begin() : get<T *>(var)->begin();
+    }
+
+    template<typename T>
+    static static_any<typename range_result_iterator<T>::type>
+    end(static_any_t col, wrap_type<T>, bool rvalue)
+    {
+        typedef variant<T *,T> var_type;
+        var_type &var = static_any_cast<var_type>(col);
+        return rvalue ? get<T>(var).end() : get<T *>(var)->end();
+    }
+
+#else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 
     template<typename T>
     static static_any<T *> contain(T &t, lvalue) // lvalue, store by reference
@@ -208,6 +287,8 @@ struct traits<sizeof(stl_container)>
         return const_cast<T const &>(static_any_cast<T>(col)).end();
     }
 
+#endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
     template<typename T>
     static bool done(static_any_t cur, static_any_t end, wrap_type<T>)
     {
@@ -241,7 +322,7 @@ struct traits<sizeof(native_array)>
     operator bool() const { return false; }
 
     template<typename T, std::size_t N>
-    static static_any<T *> contain(T (&t)[N], bool)
+    static static_any<T *> contain(T (&t)[N], bool const &)
     {
         return t;
     }
@@ -287,7 +368,7 @@ struct traits<sizeof(c_style_string)>
     operator bool() const { return false; }
 
     template<typename T>
-    static static_any<T *> contain(T *t, bool)
+    static static_any<T *> contain(T *t, bool const &)
     {
         return t;
     }
@@ -323,7 +404,7 @@ struct traits<sizeof(c_style_string)>
     }
 };
 
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // iterator ranges
 //
 template<>
@@ -333,7 +414,7 @@ struct traits<sizeof(iterator_range)>
     operator bool() const { return false; }
 
     template<typename T>
-    static static_any<std::pair<T,T> > contain(std::pair<T,T> const &t, bool)
+    static static_any<std::pair<T,T> > contain(std::pair<T,T> const &t, bool const &)
     {
         return t;
     }
@@ -373,13 +454,25 @@ struct traits<sizeof(iterator_range)>
 } // namespace for_each
 } // namespace boost
 
-// For detecting whether the container is a rvalue or lvalue. If it is an rvalue STL
-// container, it will need to be stored by value. Otherwise, it should be stored
-// by reference. In either case, the collection expression should be evaluated only
-// once!
-#define BOOST_FE_LVALUE(COL)                                                                    \
-    (::boost::mpl::bool_<(sizeof(::boost::for_each::is_lvalue((COL),0))                         \
+
+#ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
+# define BOOST_FE_RVALUE(COL) _foreach_rval
+
+// Evaluate the container expression, and detect if it is an l-value or and r-value
+# define BOOST_FE_EVAL(COL)                                                                     \
+    (true ? ::boost::for_each::rvalue_probe((COL),_foreach_rval) : (COL))
+
+#else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+
+# define BOOST_FE_RVALUE(COL)                                                                   \
+    (::boost::mpl::bool_<(sizeof(::boost::for_each::is_rvalue((COL),0))                         \
                         ==sizeof(::boost::for_each::yes_type))>())
+
+// Evaluate the container expression, and detect if it is an l-value or and r-value
+# define BOOST_FE_EVAL(COL) (COL)
+
+#endif // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 
 // A sneaky way to get the type of the collection without evaluating the expression
 #define BOOST_FE_TYPEOF(COL)                                                                    \
@@ -412,12 +505,13 @@ struct traits<sizeof(iterator_range)>
 //       { ... }
 //
 #define BOOST_FOREACH(VAR, COL)                                                                                                                 \
-    if       (::boost::for_each::traits<sizeof(::boost::for_each::select((COL),0))> _foreach_tr = 0) {}                                         \
-    else if  (::boost::for_each::static_any_t _foreach_col = _foreach_tr.contain((COL), BOOST_FE_LVALUE(COL))) {}                             \
-    else if  (::boost::for_each::static_any_t _foreach_cur = _foreach_tr.begin(_foreach_col, BOOST_FE_TYPEOF(COL), BOOST_FE_LVALUE(COL))) {}  \
-    else if  (::boost::for_each::static_any_t _foreach_end = _foreach_tr.end(_foreach_col, BOOST_FE_TYPEOF(COL), BOOST_FE_LVALUE(COL))) {}    \
+    if       (bool _foreach_rval = false) {}                                                                                                    \
+    else if  (::boost::for_each::traits<sizeof(::boost::for_each::select((COL),0))> _foreach_tr = 0) {}                                         \
+    else if  (::boost::for_each::static_any_t _foreach_col = _foreach_tr.contain(BOOST_FE_EVAL(COL), BOOST_FE_RVALUE(COL))) {}                  \
+    else if  (::boost::for_each::static_any_t _foreach_cur = _foreach_tr.begin(_foreach_col, BOOST_FE_TYPEOF(COL), BOOST_FE_RVALUE(COL))) {}    \
+    else if  (::boost::for_each::static_any_t _foreach_end = _foreach_tr.end(_foreach_col, BOOST_FE_TYPEOF(COL), BOOST_FE_RVALUE(COL))) {}      \
     else for (bool _foreach_continue = true;                                                                                                    \
-               _foreach_continue && !_foreach_tr.done(_foreach_cur,_foreach_end, BOOST_FE_TYPEOF(COL));                                         \
+               _foreach_continue && !_foreach_tr.done(_foreach_cur, _foreach_end, BOOST_FE_TYPEOF(COL));                                        \
                _foreach_continue ? _foreach_tr.next(_foreach_cur, BOOST_FE_TYPEOF(COL)) : (void)0)                                              \
          if       (_foreach_continue = false) {}                                                                                                \
          else for (VAR = _foreach_tr.extract(_foreach_cur, BOOST_FE_TYPEOF(COL));                                                               \
