@@ -12,10 +12,7 @@
 #include <utility>  // for std::pair
 #include <iterator> // for std::iterator_traits
 #include <boost/mpl/bool.hpp>
-#include <boost/call_traits.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/add_reference.hpp>
-#include <boost/type_traits/remove_const.hpp>
+#include <boost/range/result_iterator.hpp>
 
 namespace boost { namespace for_each {
 
@@ -41,23 +38,23 @@ struct static_any_base
 template<typename T>
 struct static_any : static_any_base
 {
-    static_any(typename call_traits<T>::param_type t)
-        : m_item(t)
+    static_any(T const &t)
+        : item(t)
     {
     }
 
     // temporaries of type static_any will be bound to const static_any_base
     // references, but we still want to be able to mutate the stored
     // data, so declare it as mutable.
-    mutable T m_item;
+    mutable T item;
 };
 
 typedef static_any_base const &static_any_t;
 
 template<typename T>
-typename add_reference<T>::type static_any_cast(static_any_t a)
+typename T &static_any_cast(static_any_t a)
 {
-    return static_cast<static_any<T> const &>(a).m_item;
+    return static_cast<static_any<T> const &>(a).item;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,10 +64,23 @@ template<typename T>
 struct wrap_type {};
 
 template<typename T>
-inline wrap_type<T> wrap(T &t) { return wrap_type<T>(); }
+inline wrap_type<T> wrap(T &t)
+{
+    return wrap_type<T>();
+}
 
 template<typename T>
-inline wrap_type<T const> wrap(T const &t) { return wrap_type<T const>(); }
+inline wrap_type<T const> wrap(T const &t)
+{
+    return wrap_type<T const>();
+}
+
+// for std::pair, it's easier to remove the const here than below
+template<typename T>
+inline wrap_type<std::pair<T,T> > wrap(std::pair<T,T> const &t)
+{
+    return wrap_type<std::pair<T,T> >();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // convert
@@ -84,11 +94,6 @@ struct convert
         return wrap_type<T>();
     }
 };
-
-namespace
-{
-    convert const _foreach_convert = {};
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // in_range
@@ -147,25 +152,6 @@ inline T value(T const &t)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// container_traits
-//
-template<typename T>
-struct container_traits
-{
-    typedef typename T::iterator                iterator_type;
-    typedef std::iterator_traits<iterator_type> traits_type;
-    typedef typename traits_type::reference     reference_type;
-};
-
-template<typename T>
-struct container_traits<T const>
-{
-    typedef typename T::const_iterator          iterator_type;
-    typedef std::iterator_traits<iterator_type> traits_type;
-    typedef typename traits_type::reference     reference_type;
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // traits
 //
 template<std::size_t Collection>
@@ -181,9 +167,9 @@ struct traits<sizeof(stl_container)>
     operator bool() const { return false; }
 
     template<typename T>
-    static static_any<T &> contain(T &t, lvalue) // lvalue, store by reference
+    static static_any<T *> contain(T &t, lvalue) // lvalue, store by reference
     {
-        return t;
+        return &t;
     }
 
     template<typename T>
@@ -193,52 +179,54 @@ struct traits<sizeof(stl_container)>
     }
 
     template<typename T>
-    static static_any<typename container_traits<T>::iterator_type>
+    static static_any<typename range_result_iterator<T>::type>
     begin(static_any_t col, wrap_type<T>, lvalue) // lvalue, const matters here
     {
-        return static_any_cast<T &>(col).begin();
+        return static_any_cast<T *>(col)->begin();
     }
 
     template<typename T>
     static static_any<typename T::const_iterator>
     begin(static_any_t col, wrap_type<T const>, rvalue) // rvalue, allow only const iteration
     {
+        // const_cast here is being used to add const, not remove it.
         return const_cast<T const &>(static_any_cast<T>(col)).begin();
     }
 
     template<typename T>
-    static static_any<typename container_traits<T>::iterator_type>
+    static static_any<typename range_result_iterator<T>::type>
     end(static_any_t col, wrap_type<T>, lvalue) // lvalue, const matters here
     {
-        return static_any_cast<T &>(col).end();
+        return static_any_cast<T *>(col)->end();
     }
 
     template<typename T>
     static static_any<typename T::const_iterator>
     end(static_any_t col, wrap_type<T const>, rvalue) // rvalue, allow only const iteration
     {
+        // const_cast here is being used to add const, not remove it.
         return const_cast<T const &>(static_any_cast<T>(col)).end();
     }
 
     template<typename T>
     static bool done(static_any_t cur, static_any_t end, wrap_type<T>)
     {
-        typedef typename container_traits<T>::iterator_type iter_t;
+        typedef typename range_result_iterator<T>::type iter_t;
         return static_any_cast<iter_t>(cur) == static_any_cast<iter_t>(end);
     }
 
     template<typename T>
     static void next(static_any_t cur, wrap_type<T>)
     {
-        typedef typename container_traits<T>::iterator_type iter_t;
+        typedef typename range_result_iterator<T>::type iter_t;
         ++static_any_cast<iter_t>(cur);
     }
 
     template<typename T>
-    static typename container_traits<T>::reference_type
+    static typename std::iterator_traits<typename range_result_iterator<T>::type>::reference
     extract(static_any_t cur, wrap_type<T>)
     {
-        typedef typename container_traits<T>::iterator_type iter_t;
+        typedef typename range_result_iterator<T>::type iter_t;
         return *static_any_cast<iter_t>(cur);
     }
 };
@@ -351,39 +339,34 @@ struct traits<sizeof(iterator_range)>
     }
 
     template<typename T>
-    static static_any<typename T::first_type>
-    begin(static_any_t col, wrap_type<T>, bool)
+    static static_any<T> begin(static_any_t col, wrap_type<std::pair<T,T> >, bool)
     {
-        return static_any_cast<typename remove_const<T>::type>(col).first;
+        return static_any_cast<std::pair<T,T> >(col).first;
     }
 
     template<typename T>
-    static static_any<typename T::first_type>
-    end(static_any_t col, wrap_type<T>, bool)
+    static static_any<T> end(static_any_t col, wrap_type<std::pair<T,T> >, bool)
     {
-        return static_any_cast<typename remove_const<T>::type>(col).second;
+        return static_any_cast<std::pair<T,T> >(col).second;
     }
 
     template<typename T>
-    static bool done(static_any_t cur, static_any_t end, wrap_type<T>)
+    static bool done(static_any_t cur, static_any_t end, wrap_type<std::pair<T,T> >)
     {
-        typedef typename T::first_type iter_t;
-        return static_any_cast<iter_t>(cur) == static_any_cast<iter_t>(end);
+        return static_any_cast<T>(cur) == static_any_cast<T>(end);
     }
 
     template<typename T>
-    static void next(static_any_t cur, wrap_type<T>)
+    static void next(static_any_t cur, wrap_type<std::pair<T,T> >)
     {
-        typedef typename T::first_type iter_t;
-        ++static_any_cast<iter_t>(cur);
+        ++static_any_cast<T>(cur);
     }
 
     template<typename T>
-    static typename std::iterator_traits<typename T::first_type>::reference 
-    extract(static_any_t cur, wrap_type<T>)
+    static typename std::iterator_traits<T>::reference 
+    extract(static_any_t cur, wrap_type<std::pair<T,T> >)
     {
-        typedef typename T::first_type iter_t;
-        return *static_any_cast<iter_t>(cur);
+        return *static_any_cast<T>(cur);
     }
 };
 
@@ -400,7 +383,7 @@ struct traits<sizeof(iterator_range)>
 
 // A sneaky way to get the type of the collection without evaluating the expression
 #define BOOST_FE_TYPEOF(COL)                                                                    \
-    (true ? ::boost::for_each::_foreach_convert : ::boost::for_each::wrap(COL))
+    (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
 
 ///////////////////////////////////////////////////////////////////////////////
 // BOOST_FOREACH
