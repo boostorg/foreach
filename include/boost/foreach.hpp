@@ -24,8 +24,7 @@
 #include <boost/range/result_iterator.hpp>
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
-# include <boost/variant/variant.hpp>
-# include <boost/variant/get.hpp>
+# include <boost/aligned_storage.hpp>
 #else
 # include <boost/mpl/bool.hpp>
 #endif
@@ -73,7 +72,7 @@ struct static_any : static_any_base
 typedef static_any_base const &static_any_t;
 
 template<typename T>
-T &static_any_cast(static_any_t a)
+inline T &static_any_cast(static_any_t a)
 {
     return static_cast<static_any<T> const &>(a).item;
 }
@@ -120,7 +119,7 @@ struct convert
 // in_range
 //
 template<typename T>
-std::pair<T,T> in_range(T begin, T end)
+inline std::pair<T,T> in_range(T begin, T end)
 {
     return std::make_pair(begin, end);
 }
@@ -134,26 +133,83 @@ struct rvalue_probe
 {
     template<typename T>
     rvalue_probe(T const &t, bool &b)
-        : ptemp(const_cast<T*>(&t))
+        : ptemp(const_cast<T *>(&t))
         , rvalue(b)
     {
     }
 
     template<typename U>
-    operator U ()
+    operator U()
     {
         rvalue = true;
-        return *static_cast<U*>(ptemp);
+        return *static_cast<U *>(ptemp);
     }
 
     template<typename V>
-    operator V & () const
+    operator V &() const
     {
-        return *static_cast<V*>(ptemp);
+        return *static_cast<V *>(ptemp);
     }
 
     void *ptemp;
     bool &rvalue;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// simple_variant
+//  holds either a T or a T*
+template<typename T>
+struct simple_variant
+{
+    simple_variant(T *t)
+        : rvalue(false)
+    {
+        *static_cast<T **>(data.address()) = t;
+    }
+
+    simple_variant(T const &t)
+        : rvalue(true)
+    {
+        ::new(data.address()) T(t);
+    }
+
+    simple_variant(simple_variant const &that)
+        : rvalue(that.rvalue)
+    {
+        if(rvalue)
+        {
+            ::new(data.address()) T(*that.get());
+        }
+        else
+        {
+            *static_cast<T **>(data.address()) = that.get();
+        }
+    }
+
+    ~simple_variant()
+    {
+        if(rvalue)
+        {
+            get()->~T();
+        }
+    }
+
+    T *get() const
+    {
+        if(rvalue)
+        {
+            return static_cast<T *>(data.address());
+        }
+        else
+        {
+            return *static_cast<T **>(data.address());
+        }
+    }
+
+private:
+    enum { size = sizeof(T) > sizeof(T*) ? sizeof(T) : sizeof(T*) };
+    bool const                      rvalue;
+    mutable aligned_storage<size>   data;
 };
 
 #else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
@@ -222,34 +278,34 @@ struct traits<sizeof(stl_container)>
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 
     template<typename T>
-    static static_any<variant<T *,T> > contain(T &t, bool const &)
+    static static_any<simple_variant<T> > contain(T &t, bool const &)
     {
-        return variant<T *,T>(&t);
+        return simple_variant<T>(&t);
     }
 
     template<typename T>
-    static static_any<variant<T const *,T const> > contain(T const &t, bool const &rvalue)
+    static static_any<simple_variant<T const> > contain(T const &t, bool const &rvalue)
     {
-        typedef variant<T const *,T const> var_type;
+        typedef simple_variant<T const> var_type;
         return rvalue ? var_type(t) : var_type(&t);
     }
 
     template<typename T>
     static static_any<typename range_result_iterator<T>::type>
-    begin(static_any_t col, wrap_type<T>, bool rvalue)
+    begin(static_any_t col, wrap_type<T>, bool)
     {
-        typedef variant<T *,T> var_type;
+        typedef simple_variant<T> var_type;
         var_type &var = static_any_cast<var_type>(col);
-        return rvalue ? get<T>(var).begin() : get<T *>(var)->begin();
+        return var.get()->begin();
     }
 
     template<typename T>
     static static_any<typename range_result_iterator<T>::type>
-    end(static_any_t col, wrap_type<T>, bool rvalue)
+    end(static_any_t col, wrap_type<T>, bool)
     {
-        typedef variant<T *,T> var_type;
+        typedef simple_variant<T> var_type;
         var_type &var = static_any_cast<var_type>(col);
-        return rvalue ? get<T>(var).end() : get<T *>(var)->end();
+        return var.get()->end();
     }
 
 #else // BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
