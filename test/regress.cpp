@@ -35,6 +35,32 @@ std::list<int> const &const_list = list;
 std::pair<int_iterator,int_iterator> const &const_pair = pair;
 
 ///////////////////////////////////////////////////////////////////////////////
+// define a user-defined collection type and teach BOOST_FOREACH how to enumerate it
+//
+namespace mine
+{
+    struct dummy {};
+}
+
+namespace boost
+{
+    template<>
+    struct range_iterator<mine::dummy>
+    {
+        typedef char * type;
+    };
+    template<>
+    struct range_const_iterator<mine::dummy>
+    {
+        typedef char const * type;
+    };
+    char * begin(mine::dummy&) {return 0;}
+    char const * begin(mine::dummy const&) {return 0;}
+    char * end(mine::dummy&) {return 0;}
+    char const * end(mine::dummy const&) {return 0;}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // to_vector_for
 //
 template<typename Range>
@@ -136,6 +162,13 @@ int test_main( int, char*[] )
     BOOST_CHECK(to_vector_foreach_byval(array) == to_vector_for(results));
     BOOST_CHECK(to_vector_foreach_byval(ntcs)  == to_vector_for(results));
     BOOST_CHECK(to_vector_foreach_byval(list)  == to_vector_for(results));
+
+    // loop over a user-defined type (just make sure this compiles)
+    mine::dummy d;
+    BOOST_FOREACH( char c, d )
+    {
+        ((void)c); // no-op
+    }
 
     return 0;
 }
