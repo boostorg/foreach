@@ -24,6 +24,7 @@
 #include <boost/range/result_iterator.hpp>
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
+# include <new>
 # include <boost/aligned_storage.hpp>
 #else
 # include <boost/mpl/bool.hpp>
