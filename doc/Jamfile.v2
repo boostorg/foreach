@@ -1,0 +1,9 @@
+import boostbook : boostbook ;
+
+boostbook foreach
+    :
+        foreach.xml
+    :
+        <xsl:param>nav.layout=none
+        <xsl:param>boost.root=../../../..
+    ;

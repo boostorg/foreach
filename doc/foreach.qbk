@@ -1,0 +1,78 @@
+
+[library BOOST_FOREACH
+    [version 1.0]
+    [authors [Niebler, Eric]]
+    [copyright 2004 Eric Niebler]
+    [category algorithms]
+    [purpose 
+        foreach looping construct, for writing simple loops over STL containers,
+        null-terminated strings, arrays, iterator pairs and user defined types.
+    ]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        <ulink url="http://www.boost.org/LICENSE_1_0.txt">
+            http://www.boost.org/LICENSE_1_0.txt
+        </ulink>)
+    ]
+]
+
+[/ QuickBook Document version 1.0 ]
+
+[/  Images   ]
+
+[def __note__              [$images/note.png]]
+[def __alert__             [$images/caution.png]]
+[def __detail__            [$images/note.png]]
+[def __tip__               [$images/tip.png]]
+
+[/  Links   ]
+
+[def _iterator_            [@http://boost.org/libs/iterator/doc/index.html Boost.Iterator]]
+
+[section Preface]
+
+[:Something witty!]
+[:[*['-- Someone Famous]]]
+
+[h2 Description]
+
+TODO: description goes here
+
+[h2 Motivation]
+
+TODO: motivation goes here
+
+[endsect]
+[section User's Guide]
+
+[section Introduction]
+
+[h2 What is BOOST_FOREACH?]
+
+[h2 Hello, world!]
+
+Below is a sample program that uses BOOST_FOREACH to loop over the contents of
+a null-terminated C-style string.
+
+    #include <iostream>
+    #include <boost/foreach.hpp>
+
+    int main()
+    {
+        char const * greeting = "Hello, world!";
+        BOOST_FOREACH( char ch, greeting )
+        {
+            std::cout << ch;
+        }
+        return 0;
+    }
+
+This program outputs the following:
+
+[pre
+Hello, world!
+]
+
+[endsect]
+[endsect]
