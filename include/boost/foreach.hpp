@@ -18,7 +18,7 @@
 // Some compilers allow temporaries to be bound to non-const references.
 // These compilers make it impossible to for BOOST_FOREACH to detect
 // temporaries and avoid reevaluation of the container expression.
-#if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
+#ifdef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
 # define BOOST_FOREACH_NO_RVALUE_DETECTION
 #endif
 
@@ -267,6 +267,8 @@ inline bool set_false(bool &b)
     return b = false;
 }
 
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
+
 ///////////////////////////////////////////////////////////////////////////////
 // cheap_copy
 //   Overload this for user-defined collection types if they are inexpensive to copy.
@@ -285,6 +287,8 @@ inline mpl::true_ cheap_copy(container<iterator_range<T>,C>) { return mpl::true_
 
 template<typename T,typename C>
 inline mpl::true_ cheap_copy(container<sub_range<T>,C>) { return mpl::true_(); }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // contain
@@ -372,12 +376,14 @@ end(static_any_t col, container<T,C>, bool, mpl::true_)
     return for_each::adl_end(static_any_cast<T,C>(col));
 }
 
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
 template<typename T,typename C>
 inline static_any<int>
 end(static_any_t col, container<T *,C>, bool, mpl::true_)
 {
     return 0; // not used
 }
+#endif
 
 #ifndef BOOST_FOREACH_NO_CONST_RVALUE_DETECTION
 template<typename T>
@@ -420,11 +426,13 @@ inline bool done(static_any_t cur, static_any_t end, container<T,C>)
     return static_any_cast<iter_t,mpl::false_>(cur) == static_any_cast<iter_t,mpl::false_>(end);
 }
 
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
 template<typename T,typename C>
 inline bool done(static_any_t cur, static_any_t, container<T *,C>)
 {
     return ! *static_any_cast<T *,mpl::false_>(cur);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // next
@@ -515,26 +523,37 @@ deref(static_any_t cur, container<T,C>)
 
 #endif
 
+#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
+
+# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
+    (::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
+
+#else
+
+# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
+    (::boost::mpl::false_())
+
+#endif
 
 #define BOOST_FOREACH_CONTAIN(COL)                                              \
     ::boost::for_each::contain(                                                 \
         BOOST_FOREACH_EVAL(COL)                                                 \
       , BOOST_FOREACH_RVALUE(COL)                                               \
-      , ::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
+      , BOOST_FOREACH_CHEAP_COPY(COL))
 
 #define BOOST_FOREACH_BEGIN(COL)                                                \
     ::boost::for_each::begin(                                                   \
         _foreach_col                                                            \
       , BOOST_FOREACH_TYPEOF(COL)                                               \
       , BOOST_FOREACH_RVALUE(COL)                                               \
-      , ::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
+      , BOOST_FOREACH_CHEAP_COPY(COL))
 
 #define BOOST_FOREACH_END(COL)                                                  \
     ::boost::for_each::end(                                                     \
         _foreach_col                                                            \
       , BOOST_FOREACH_TYPEOF(COL)                                               \
       , BOOST_FOREACH_RVALUE(COL)                                               \
-      , ::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
+      , BOOST_FOREACH_CHEAP_COPY(COL))
 
 #define BOOST_FOREACH_DONE(COL)                                                 \
     ::boost::for_each::done(                                                    \
