@@ -267,7 +267,7 @@ inline bool set_false(bool &b)
     return b = false;
 }
 
-#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
+#ifndef BOOST_FOREACH_NO_RVALUE_DETECTION
 
 ///////////////////////////////////////////////////////////////////////////////
 // cheap_copy
@@ -467,13 +467,16 @@ deref(static_any_t cur, container<T,C>)
 # define BOOST_FOREACH_TYPEOF(COL)                                              \
     (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
 
+// Evaluate the container expression, and detect if it is an l-value or and r-value
+# define BOOST_FOREACH_EVAL(COL)                                                \
+    (true ? ::boost::for_each::rvalue_probe((COL),_foreach_rvalue) : (COL))
+
 // The R-value/L-value-ness of the collection expression is determined dynamically
 # define BOOST_FOREACH_RVALUE(COL)                                              \
     _foreach_rvalue
 
-// Evaluate the container expression, and detect if it is an l-value or and r-value
-# define BOOST_FOREACH_EVAL(COL)                                                \
-    (true ? ::boost::for_each::rvalue_probe((COL),_foreach_rvalue) : (COL))
+# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
+    (::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
 
 # define BOOST_FOREACH_NOOP(COL)                                                \
     ((void)0)
@@ -487,15 +490,18 @@ deref(static_any_t cur, container<T,C>)
 # define BOOST_FOREACH_TYPEOF(COL)                                              \
     (true ? ::boost::for_each::convert() : ::boost::for_each::wrap(COL))
 
+// Evaluate the container expression
+# define BOOST_FOREACH_EVAL(COL)                                                \
+    (COL)
+
 // Determine whether the container expression is an l-value or an r-value.
 // NOTE: this gets the answer for const R-values wrong.
 # define BOOST_FOREACH_RVALUE(COL)                                              \
     (::boost::mpl::bool_<(sizeof(::boost::for_each::is_rvalue((COL),0))         \
                         ==sizeof(::boost::for_each::yes_type))>())
 
-// Evaluate the container expression
-# define BOOST_FOREACH_EVAL(COL)                                                \
-    (COL)
+# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
+    (::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
 
 # define BOOST_FOREACH_NOOP(COL)                                                \
     ((void)0)
@@ -509,13 +515,16 @@ deref(static_any_t cur, container<T,C>)
 # define BOOST_FOREACH_TYPEOF(COL)                                              \
     (::boost::for_each::wrap(COL))
 
+// Evaluate the container expression
+# define BOOST_FOREACH_EVAL(COL)                                                \
+    (COL)
+
 // Can't use R-values with BOOST_FOREACH
 # define BOOST_FOREACH_RVALUE(COL)                                              \
     (mpl::false_())
 
-// Evaluate the container expression
-# define BOOST_FOREACH_EVAL(COL)                                                \
-    (COL)
+# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
+    (::boost::mpl::false_())
 
 // Attempt to make uses of BOOST_FOREACH with non-lvalues fail to compile
 # define BOOST_FOREACH_NOOP(COL)                                                \
@@ -523,17 +532,6 @@ deref(static_any_t cur, container<T,C>)
 
 #endif
 
-#ifndef BOOST_NO_FUNCTION_TEMPLATE_ORDERING
-
-# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
-    (::boost::for_each::cheap_copy(BOOST_FOREACH_TYPEOF(COL)))
-
-#else
-
-# define BOOST_FOREACH_CHEAP_COPY(COL)                                          \
-    (::boost::mpl::false_())
-
-#endif
 
 #define BOOST_FOREACH_CONTAIN(COL)                                              \
     ::boost::for_each::contain(                                                 \
