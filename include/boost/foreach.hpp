@@ -282,13 +282,13 @@ private:
 // is_rvalue
 //
 template<typename T>
-mpl::false_ *is_rvalue(T &, int)
+inline mpl::false_ *is_rvalue(T &, int)
 {
 	return 0;
 }
 
 template<typename T>
-mpl::true_ *is_rvalue(T const &, ...)
+inline mpl::true_ *is_rvalue(T const &, ...)
 {
 	return 0;
 }
@@ -307,34 +307,34 @@ inline bool set_false(bool &b)
 // to_ptr
 //
 template<typename T>
-T *to_ptr(T const &t) { return 0; }
+inline T *to_ptr(T const &t) { return 0; }
 
 // Borland needs a little extra help with arrays
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
 template<typename T,std::size_t N>
-T (*to_ptr(T (&t)[N]))[N] { return 0; }
+inline T (*to_ptr(T (&t)[N]))[N] { return 0; }
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // cheap_copy
 //   Overload this for user-defined collection types if they are inexpensive to copy.
 //   This tells BOOST_FOREACH it can avoid the r-value/l-value detection stuff.
-mpl::false_ *cheap_copy(...) { return 0; }
+inline mpl::false_ *cheap_copy(...) { return 0; }
 
 template<typename T>
-mpl::true_ *cheap_copy(std::pair<T, T> *) { return 0; }
+inline mpl::true_ *cheap_copy(std::pair<T, T> *) { return 0; }
 
 template<typename T>
-mpl::true_ *cheap_copy(iterator_range<T> *) { return 0; }
+inline mpl::true_ *cheap_copy(iterator_range<T> *) { return 0; }
 
 template<typename T>
-mpl::true_ *cheap_copy(sub_range<T> *) { return 0; }
+inline mpl::true_ *cheap_copy(sub_range<T> *) { return 0; }
 
 template<typename T>
-mpl::true_ *cheap_copy(T **) { return 0; }
+inline mpl::true_ *cheap_copy(T **) { return 0; }
 
 template<typename T,std::size_t N>
-mpl::false_ *cheap_copy(T (*)[N]) { return 0; }
+inline mpl::false_ *cheap_copy(T (*)[N]) { return 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // derefof
