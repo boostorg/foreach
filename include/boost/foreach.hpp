@@ -546,6 +546,10 @@ deref(auto_any_t cur, type2type<T, C> *)
 # define BOOST_FOREACH_EVAL(COL)                                                                \
     (true ? boost::foreach_detail_::rvalue_probe((COL), _foreach_rvalue) : (COL))
 
+// Declare a variable to track the rvalue-ness of the collection expression
+# define BOOST_FOREACH_DEFINE_RVALUE()                                                          \
+    if (bool _foreach_rvalue = false) {} else
+
 // The R-value/L-value-ness of the collection expression is determined dynamically
 # define BOOST_FOREACH_RVALUE(COL)                                                              \
     (&_foreach_rvalue)
@@ -568,6 +572,10 @@ deref(auto_any_t cur, type2type<T, C> *)
 // Evaluate the collection expression
 # define BOOST_FOREACH_EVAL(COL)                                                                \
     (COL)
+
+// No variable is needed to track the rvalue-ness of the collection expression
+# define BOOST_FOREACH_DEFINE_RVALUE()                                                          \
+    /**/
 
 // Determine whether the collection expression is an l-value or an r-value.
 // NOTE: this gets the answer for const R-values wrong.
@@ -592,6 +600,10 @@ deref(auto_any_t cur, type2type<T, C> *)
 // Evaluate the collection expression
 # define BOOST_FOREACH_EVAL(COL)                                                                \
     (COL)
+
+// No variable is needed to track the rvalue-ness of the collection expression
+# define BOOST_FOREACH_DEFINE_RVALUE()                                                          \
+    /**/
 
 // Can't use R-values with BOOST_FOREACH
 # define BOOST_FOREACH_RVALUE(COL)                                                              \
@@ -671,7 +683,7 @@ deref(auto_any_t cur, type2type<T, C> *)
 //       { ... }
 //
 #define BOOST_FOREACH(VAR, COL)                                                                 \
-    if (bool _foreach_rvalue = false) {} else                                                   \
+    BOOST_FOREACH_DEFINE_RVALUE()                                                               \
     if (boost::foreach_detail_::auto_any_t _foreach_col = BOOST_FOREACH_CONTAIN(COL)) {} else   \
     if (boost::foreach_detail_::auto_any_t _foreach_cur = BOOST_FOREACH_BEGIN(COL)) {} else     \
     if (boost::foreach_detail_::auto_any_t _foreach_end = BOOST_FOREACH_END(COL)) {} else       \
