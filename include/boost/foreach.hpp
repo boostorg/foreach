@@ -8,6 +8,12 @@
 //
 
 #ifndef BOOST_FOREACH
+
+// MS compatible compilers support #pragma once
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+# pragma once
+#endif
+
 #include <cstddef>
 #include <utility>  // for std::pair
 
