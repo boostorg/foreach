@@ -45,10 +45,10 @@ In C++, writing a loop that iterates over a sequence is tedious. You can either
 use iterators, which requires a considerable amount of boiler-plate, or you can
 use the `std::for_each()` algorithm and move your loop body into a predicate, which
 requires no less boiler-plate and forces you to move your logic far from where
-it will be used. In contrast, some other languages provide a dedicated "foreach"
-construct that automates this process. _foreach_ is just such a construct for C++.
-It iterates over sequences for you, freeing you from having to deal directly with
-iterators or write predicates.
+it will be used. In contrast, some other languages, like Perl, provide a dedicated
+"foreach" construct that automates this process. _foreach_ is just such a construct
+for C++. It iterates over sequences for you, freeing you from having to deal directly
+with iterators or write predicates.
 
 _foreach_ is designed for ease-of-use and efficiency. It does no dynamic allocations,
 makes no virtual function calls or calls through function pointers, and makes no calls
@@ -141,6 +141,14 @@ Iterate over a sequence by reference, and modify the underlying sequence:
     }
     // array_short contains {2,3,4} here
 
+Iterate over a vector of vectors with nested _foreach_ loops. In this
+example, notice that braces around the loop body are not necessary:
+
+    std::vector<std::vector<int> > matrix_int;
+    BOOST_FOREACH( std::vector<int> & row, matrix_int )
+        BOOST_FOREACH( int & i, row )
+            ++i;
+
 Iterate over an expression that returns a sequence by value (i.e. an r-value):
 
     extern std::vector<float> get_vector_float();
@@ -152,6 +160,24 @@ Iterate over an expression that returns a sequence by value (i.e. an r-value):
 Iterating over r-values doesn't work on some older compilers. Check the 
 [link boost_foreach.portability Portability] section to see whether your
 compiler supports this.    
+
+[h2 Making _foreach_ Prettier]
+
+People have complained about the name _foreach_. It's too long. `ALL CAPS` can
+get tiresome to look at. That may be true, but _foreach_ is merely following
+the [@http://www.boost.org/more/lib_guide.htm Boost Naming Convention]. That
+doesn't mean you're stuck with it, though. If you would like to use a different
+identifier (`foreach`, perhaps), you can simply do:
+
+    #define foreach BOOST_FOREACH
+
+Only do this if you are sure that the identifier you choose will not cause
+name conflicts in your code.
+
+[blurb _note_ Do not use `#define foreach(x,y) BOOST_FOREACH(x,y)`.
+ This can be problematic if the arguments are macros itself. This would
+ result in an additional expansion of these macros. Instead, use the 
+ form shown above.]
 
 [endsect]
 
@@ -189,7 +215,7 @@ Below is an example for extending _foreach_ to iterate over a type which wraps a
         std::string::iterator end(StringWrapper & w) { return w.str.end(); }
 
         std::string::const_iterator begin(StringWrapper const & w) { return w.str.begin(); }
-        std::string::const_iterator end(StringWrapper const & w) { return w.str.begin(); }
+        std::string::const_iterator end(StringWrapper const & w) { return w.str.end(); }
     }
 
 Now that you have taught _range_ (and hence _foreach_) about your type, you
@@ -203,6 +229,75 @@ can now use _foreach_ to iterate over your type.
 
 There are some portability issues you should be aware of when extending _foreach_. Be sure
 to check out the [link boost_foreach.portability Portability] section.
+
+[endsect]
+
+[section Pitfalls]
+
+This section describes some common pitfalls with _foreach_.
+
+[h2 Types With Commas]
+
+Since _foreach_ is a macro, it must have exactly two arguments, with exactly one
+comma separating them. That's not always convenient, especially when the type of the
+loop variable is a template. Consider trying to iterate over a `std::map`:
+
+    std::map<int,int> m;
+
+    // ERROR! Too many arguments to BOOST_FOREACH macro.
+    BOOST_FOREACH(std::pair<int,int> p, m) // ...
+
+One way to fix this is with a typedef.
+
+    std::map<int,int> m;
+    typedef std::pair<int,int> pair_t;
+
+    BOOST_FOREACH(pair_t p, m) // ...
+
+Another way to fix it is to predeclare the loop variable:
+
+    std::map<int,int> m;
+    std::pair<int,int> p;
+
+    BOOST_FOREACH(p, m) // ...
+
+[h2 Hoisting and Iterator Invalidation]
+
+Under the covers, _foreach_ uses iterators to traverse the element
+sequence. Before the loop is executed, the end iterator is cached
+in a local variable. This is called ['hoisting], and it is an
+important optimization. It assumes, however, that the end iterator
+of the sequence is stable. It usually is, but if you modify the
+sequence by adding or removing elements while you are iterating
+over it, you may end up hoisting yourself on your on petard.
+
+Consider the following code:
+
+    std::vector<int> vect(4, 4);
+    BOOST_FOREACH(int i, vect)
+    {
+        vect.push_back(i + 1);
+    }
+
+This code will compile, but it has undefined behavior. That is because
+it is logically equivalent to the following:
+
+    std::vector<int> vect(4, 4);
+    for(std::vector<int>::iterator i1 = vect.begin(), i2 = vect.end();
+        i1 != i2; ++i1)
+    {
+        int i = *i1;
+        vect.push_back(i + 1);
+    }
+
+The call to `vect.push_back()` will cause all iterators into `vect` to
+become invalid, including `i1` and `i2`. The next iteration through
+the loop will cause the invalid iterators to be used -- Blam-o! Bad news.
+
+The moral of the story is to think twice before adding and removing
+elements from the sequence over which you are iterating. If doing
+so could cause iterators to become invalid, don't do it. Use a regular
+`for` loop instead.
 
 [endsect]
 
@@ -245,6 +340,7 @@ from each.
   [[Intel for Windows 8.0]   [Level 1]]
   [[Intel for Windows 7.0]   [Level 2]]
   [[Comeau 4.3.3]            [Level 0]]
+  [[Borland 5.6.4]           [Level 2]]
 ]
 
 Also, if your compiler is one for which the Boost config system defines `BOOST_NO_FUNCTION_TEMPLATE_ORDERING`,
@@ -252,11 +348,38 @@ then the compliance level for the _foreach_ macro is Level 2, the lowest.
 
 [endsect]
 
-[section Acknowledgements]
+[section History and Acknowledgements]
 
-_foreach_ wouldn't have been possible without the help and incessant prodding of Anson Tsao at
-Microsoft, with whom I co-authored an article for the November 2003 issue of the [@http://www.cuj.com CUJ].
+[h2 History]
+
+The ideas for _foreach_ began life in the Visual C++ group at Microsoft during the early phases of
+the design for C++/CLI. Whether to add a dedicated "foreach" looping construct to the language was
+an open question at the time. As a mental exercise, Anson Tsao sent around some proof-of-concept
+code which demonstrated that a pure library solution might be possible. The code was written in the
+proposed C++/CLI dialect of the time, for which there was no compiler as of yet. I was intrigued by
+the possibility, and I ported his code to Managed C++ and got it working. We worked together to
+refine the idea and eventually published an article about it in the November 2003 issue of the
+[@http://www.cuj.com CUJ].
+
+After leaving Microsoft, I revisited the idea of a looping construct. I reimplemented the macro
+from scratch in standard C++, corrected some shortcomings of the CUJ version and rechristened it
+BOOST_FOREACH. In October of 2003 I began a discussion about it on the Boost developers list, where
+it met with a luke-warm reception. I dropped the issue until December 2004, when I reimplemented
+BOOST_FOREACH yet again. The new version only evaluated its sequence expression once and correctly
+handled both l-value and r-value sequence expressions. It was built on top of the recently
+accepted _range_ library, which increased its portability. This was the version that, on Dec. 12 2004,
+I finally submitted to Boost for review. It was accepted into Boost on May 5, 2005.
+
+[h2 Acknowledgements]
+
+Thanks go out to Anson Tsao of Microsoft for coming up with the idea and demonstrating its feasibility.
 I would also like to thank [@http://boost.org/people/thorsten_ottosen.html Thorsten Ottosen] for
 the _range_ library, on which the current version of _foreach_ is built.
+
+[h2 Further Reading]
+
+If you would like more information about how _foreach_ works, you can read the article
+[@http://www.artima.com/cppsource/foreach.html "Conditional Love"] at
+[@http://www.artima.com/cppsource/ The C++ Source].
 
 [endsect]

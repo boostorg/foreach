@@ -49,10 +49,10 @@ In C++, writing a loop that iterates over a sequence is tedious. You can either
 use iterators, which requires a considerable amount of boiler-plate, or you can
 use the <code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">for_each</phrase><phrase role="special">()</phrase></code> algorithm and move your loop body into a predicate, which
 requires no less boiler-plate and forces you to move your logic far from where
-it will be used. In contrast, some other languages provide a dedicated &quot;foreach&quot;
-construct that automates this process. <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is just such a construct for C++.
-It iterates over sequences for you, freeing you from having to deal directly with
-iterators or write predicates.</para>
+it will be used. In contrast, some other languages, like Perl, provide a dedicated
+&quot;foreach&quot; construct that automates this process. <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is just such a construct
+for C++. It iterates over sequences for you, freeing you from having to deal directly
+with iterators or write predicates.</para>
 <para>
 <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is designed for ease-of-use and efficiency. It does no dynamic allocations,
 makes no virtual function calls or calls through function pointers, and makes no calls
@@ -165,6 +165,17 @@ BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> s
 </phrase></literal>
 </programlisting>
 <para>
+Iterate over a vector of vectors with nested <code><phrase role="identifier">BOOST_FOREACH</phrase></code> loops. In this
+example, notice that braces around the loop body are not necessary:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="special"> &gt;</phrase><phrase role="identifier"> matrix_int</phrase><phrase role="special">;</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier"> std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> row</phrase><phrase role="special">,</phrase><phrase role="identifier"> matrix_int</phrase><phrase role="special"> )</phrase><phrase role="identifier">
+    BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> int</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> row</phrase><phrase role="special"> )</phrase><phrase role="special">
+        ++</phrase><phrase role="identifier">i</phrase><phrase role="special">;</phrase>
+</literal>
+</programlisting>
+<para>
 Iterate over an expression that returns a sequence by value (i.e. an r-value):</para>
 <programlisting>
 <literal>
@@ -179,6 +190,34 @@ BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> f
 Iterating over r-values doesn't work on some older compilers. Check the 
 <link linkend="boost_foreach.portability">Portability</link> section to see whether your
 compiler supports this.</para>
+<anchor id="introduction.making__code__phrase_role__identifier__boost_foreach__phrase___code__prettier" /><bridgehead renderas="sect2">Making <code><phrase role="identifier">BOOST_FOREACH</phrase></code> Prettier</bridgehead><para>
+People have complained about the name <code><phrase role="identifier">BOOST_FOREACH</phrase></code>. It's too long. <code><phrase role="identifier">ALL</phrase><phrase role="identifier"> CAPS</phrase></code> can
+get tiresome to look at. That may be true, but <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is merely following
+the <ulink url="http://www.boost.org/more/lib_guide.htm">Boost Naming Convention</ulink>. That
+doesn't mean you're stuck with it, though. If you would like to use a different
+identifier (<code><phrase role="identifier">foreach</phrase></code>, perhaps), you can simply do:</para>
+<programlisting>
+<literal>
+<phrase role="preprocessor">#define</phrase><phrase role="identifier"> foreach</phrase><phrase role="identifier"> BOOST_FOREACH</phrase>
+</literal>
+</programlisting>
+<para>
+Only do this if you are sure that the identifier you choose will not cause
+name conflicts in your code.</para>
+<informaltable frame="all">
+<?dbhtml table-width="74%" ?>
+<tgroup cols="1">
+<tbody>
+<row>
+<entry role="blurb">
+<inlinemediaobject><imageobject><imagedata fileref="images/note.png"></imagedata></imageobject></inlinemediaobject> Do not use <code><phrase role="preprocessor">#define</phrase><phrase role="identifier"> foreach</phrase><phrase role="special">(</phrase><phrase role="identifier">x</phrase><phrase role="special">,</phrase><phrase role="identifier">y</phrase><phrase role="special">)</phrase><phrase role="identifier"> BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier">x</phrase><phrase role="special">,</phrase><phrase role="identifier">y</phrase><phrase role="special">)</phrase></code>.
+ This can be problematic if the arguments are macros itself. This would
+ result in an additional expansion of these macros. Instead, use the 
+ form shown above.</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
 </section>
 <section id="boost_foreach.extending_boost_foreach">
 <title>Extending BOOST_FOREACH</title>
@@ -216,7 +255,7 @@ namespace</phrase><phrase role="identifier"> boost</phrase><phrase role="special
     std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">iterator</phrase><phrase role="identifier"> end</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">end</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="identifier">
 
     std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> begin</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="keyword"> const</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="identifier">
-    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> end</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="keyword"> const</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="special">
+    std</phrase><phrase role="special">::</phrase><phrase role="identifier">string</phrase><phrase role="special">::</phrase><phrase role="identifier">const_iterator</phrase><phrase role="identifier"> end</phrase><phrase role="special">(</phrase><phrase role="identifier">StringWrapper</phrase><phrase role="keyword"> const</phrase><phrase role="special"> &amp;</phrase><phrase role="identifier"> w</phrase><phrase role="special">)</phrase><phrase role="special"> {</phrase><phrase role="keyword"> return</phrase><phrase role="identifier"> w</phrase><phrase role="special">.</phrase><phrase role="identifier">str</phrase><phrase role="special">.</phrase><phrase role="identifier">end</phrase><phrase role="special">();</phrase><phrase role="special"> }</phrase><phrase role="special">
 }</phrase>
 </literal>
 </programlisting>
@@ -235,6 +274,85 @@ BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword"> c
 <para>
 There are some portability issues you should be aware of when extending <code><phrase role="identifier">BOOST_FOREACH</phrase></code>. Be sure
 to check out the <link linkend="boost_foreach.portability">Portability</link> section.</para>
+</section>
+<section id="boost_foreach.pitfalls">
+<title>Pitfalls</title>
+<para>
+This section describes some common pitfalls with <code><phrase role="identifier">BOOST_FOREACH</phrase></code>.</para>
+<anchor id="pitfalls.types_with_commas" /><bridgehead renderas="sect2">Types With Commas</bridgehead><para>
+Since <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is a macro, it must have exactly two arguments, with exactly one
+comma separating them. That's not always convenient, especially when the type of the
+loop variable is a template. Consider trying to iterate over a <code><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">map</phrase></code>:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">map</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> m</phrase><phrase role="special">;</phrase><phrase role="comment">
+
+// ERROR! Too many arguments to BOOST_FOREACH macro.
+</phrase><phrase role="identifier">BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">pair</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> p</phrase><phrase role="special">,</phrase><phrase role="identifier"> m</phrase><phrase role="special">)</phrase><phrase role="comment"> // ...
+</phrase></literal>
+</programlisting>
+<para>
+One way to fix this is with a typedef.</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">map</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> m</phrase><phrase role="special">;</phrase><phrase role="keyword">
+typedef</phrase><phrase role="identifier"> std</phrase><phrase role="special">::</phrase><phrase role="identifier">pair</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> pair_t</phrase><phrase role="special">;</phrase><phrase role="identifier">
+
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier">pair_t</phrase><phrase role="identifier"> p</phrase><phrase role="special">,</phrase><phrase role="identifier"> m</phrase><phrase role="special">)</phrase><phrase role="comment"> // ...
+</phrase></literal>
+</programlisting>
+<para>
+Another way to fix it is to predeclare the loop variable:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">map</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> m</phrase><phrase role="special">;</phrase><phrase role="identifier">
+std</phrase><phrase role="special">::</phrase><phrase role="identifier">pair</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">,</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> p</phrase><phrase role="special">;</phrase><phrase role="identifier">
+
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="identifier">p</phrase><phrase role="special">,</phrase><phrase role="identifier"> m</phrase><phrase role="special">)</phrase><phrase role="comment"> // ...
+</phrase></literal>
+</programlisting>
+<anchor id="pitfalls.hoisting_and_iterator_invalidation" /><bridgehead renderas="sect2">Hoisting and Iterator Invalidation</bridgehead><para>
+Under the covers, <code><phrase role="identifier">BOOST_FOREACH</phrase></code> uses iterators to traverse the element
+sequence. Before the loop is executed, the end iterator is cached
+in a local variable. This is called <emphasis>hoisting</emphasis>, and it is an
+important optimization. It assumes, however, that the end iterator
+of the sequence is stable. It usually is, but if you modify the
+sequence by adding or removing elements while you are iterating
+over it, you may end up hoisting yourself on your on petard.</para>
+<para>
+Consider the following code:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> vect</phrase><phrase role="special">(</phrase><phrase role="number">4</phrase><phrase role="special">,</phrase><phrase role="number"> 4</phrase><phrase role="special">);</phrase><phrase role="identifier">
+BOOST_FOREACH</phrase><phrase role="special">(</phrase><phrase role="keyword">int</phrase><phrase role="identifier"> i</phrase><phrase role="special">,</phrase><phrase role="identifier"> vect</phrase><phrase role="special">)</phrase><phrase role="special">
+{</phrase><phrase role="identifier">
+    vect</phrase><phrase role="special">.</phrase><phrase role="identifier">push_back</phrase><phrase role="special">(</phrase><phrase role="identifier">i</phrase><phrase role="special"> +</phrase><phrase role="number"> 1</phrase><phrase role="special">);</phrase><phrase role="special">
+}</phrase>
+</literal>
+</programlisting>
+<para>
+This code will compile, but it has undefined behavior. That is because
+it is logically equivalent to the following:</para>
+<programlisting>
+<literal>
+<phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;</phrase><phrase role="identifier"> vect</phrase><phrase role="special">(</phrase><phrase role="number">4</phrase><phrase role="special">,</phrase><phrase role="number"> 4</phrase><phrase role="special">);</phrase><phrase role="keyword">
+for</phrase><phrase role="special">(</phrase><phrase role="identifier">std</phrase><phrase role="special">::</phrase><phrase role="identifier">vector</phrase><phrase role="special">&lt;</phrase><phrase role="keyword">int</phrase><phrase role="special">&gt;::</phrase><phrase role="identifier">iterator</phrase><phrase role="identifier"> i1</phrase><phrase role="special"> =</phrase><phrase role="identifier"> vect</phrase><phrase role="special">.</phrase><phrase role="identifier">begin</phrase><phrase role="special">(),</phrase><phrase role="identifier"> i2</phrase><phrase role="special"> =</phrase><phrase role="identifier"> vect</phrase><phrase role="special">.</phrase><phrase role="identifier">end</phrase><phrase role="special">();</phrase><phrase role="identifier">
+    i1</phrase><phrase role="special"> !=</phrase><phrase role="identifier"> i2</phrase><phrase role="special">;</phrase><phrase role="special"> ++</phrase><phrase role="identifier">i1</phrase><phrase role="special">)</phrase><phrase role="special">
+{</phrase><phrase role="keyword">
+    int</phrase><phrase role="identifier"> i</phrase><phrase role="special"> =</phrase><phrase role="special"> *</phrase><phrase role="identifier">i1</phrase><phrase role="special">;</phrase><phrase role="identifier">
+    vect</phrase><phrase role="special">.</phrase><phrase role="identifier">push_back</phrase><phrase role="special">(</phrase><phrase role="identifier">i</phrase><phrase role="special"> +</phrase><phrase role="number"> 1</phrase><phrase role="special">);</phrase><phrase role="special">
+}</phrase>
+</literal>
+</programlisting>
+<para>
+The call to <code><phrase role="identifier">vect</phrase><phrase role="special">.</phrase><phrase role="identifier">push_back</phrase><phrase role="special">()</phrase></code> will cause all iterators into <code><phrase role="identifier">vect</phrase></code> to
+become invalid, including <code><phrase role="identifier">i1</phrase></code> and <code><phrase role="identifier">i2</phrase></code>. The next iteration through
+the loop will cause the invalid iterators to be used -- Blam-o! Bad news.</para>
+<para>
+The moral of the story is to think twice before adding and removing
+elements from the sequence over which you are iterating. If doing
+so could cause iterators to become invalid, don't do it. Use a regular
+<code><phrase role="keyword">for</phrase></code> loop instead.</para>
 </section>
 <section id="boost_foreach.portability">
 <title>Portability</title>
@@ -289,6 +407,7 @@ from each.</para>
 <row><entry>Intel for Windows 8.0</entry><entry>Level 1</entry></row>
 <row><entry>Intel for Windows 7.0</entry><entry>Level 2</entry></row>
 <row><entry>Comeau 4.3.3</entry><entry>Level 0</entry></row>
+<row><entry>Borland 5.6.4</entry><entry>Level 2</entry></row>
 </tbody>
 </tgroup>
 </informaltable>
@@ -296,13 +415,34 @@ from each.</para>
 Also, if your compiler is one for which the Boost config system defines <code><phrase role="identifier">BOOST_NO_FUNCTION_TEMPLATE_ORDERING</phrase></code>,
 then the compliance level for the <code><phrase role="identifier">BOOST_FOREACH</phrase></code> macro is Level 2, the lowest.</para>
 </section>
-<section id="boost_foreach.acknowledgements">
-<title>Acknowledgements</title>
+<section id="boost_foreach.history_and_acknowledgements">
+<title>History and Acknowledgements</title>
+<anchor id="history_and_acknowledgements.history" /><bridgehead renderas="sect2">History</bridgehead><para>
+The ideas for <code><phrase role="identifier">BOOST_FOREACH</phrase></code> began life in the Visual C++ group at Microsoft during the early phases of
+the design for C++/CLI. Whether to add a dedicated &quot;foreach&quot; looping construct to the language was
+an open question at the time. As a mental exercise, Anson Tsao sent around some proof-of-concept
+code which demonstrated that a pure library solution might be possible. The code was written in the
+proposed C++/CLI dialect of the time, for which there was no compiler as of yet. I was intrigued by
+the possibility, and I ported his code to Managed C++ and got it working. We worked together to
+refine the idea and eventually published an article about it in the November 2003 issue of the
+<ulink url="http://www.cuj.com">CUJ</ulink>.</para>
 <para>
-<code><phrase role="identifier">BOOST_FOREACH</phrase></code> wouldn't have been possible without the help and incessant prodding of Anson Tsao at
-Microsoft, with whom I co-authored an article for the November 2003 issue of the <ulink url="http://www.cuj.com">CUJ</ulink>.
+After leaving Microsoft, I revisited the idea of a looping construct. I reimplemented the macro
+from scratch in standard C++, corrected some shortcomings of the CUJ version and rechristened it
+BOOST_FOREACH. In October of 2003 I began a discussion about it on the Boost developers list, where
+it met with a luke-warm reception. I dropped the issue until December 2004, when I reimplemented
+BOOST_FOREACH yet again. The new version only evaluated its sequence expression once and correctly
+handled both l-value and r-value sequence expressions. It was built on top of the recently
+accepted <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> library, which increased its portability. This was the version that, on Dec. 12 2004,
+I finally submitted to Boost for review. It was accepted into Boost on May 5, 2005.</para>
+<anchor id="history_and_acknowledgements.acknowledgements" /><bridgehead renderas="sect2">Acknowledgements</bridgehead><para>
+Thanks go out to Anson Tsao of Microsoft for coming up with the idea and demonstrating its feasibility.
 I would also like to thank <ulink url="http://boost.org/people/thorsten_ottosen.html">Thorsten Ottosen</ulink> for
 the <ulink url="http://boost.org/libs/range/index.html">Boost.Range</ulink> library, on which the current version of <code><phrase role="identifier">BOOST_FOREACH</phrase></code> is built.</para>
+<anchor id="history_and_acknowledgements.further_reading" /><bridgehead renderas="sect2">Further Reading</bridgehead><para>
+If you would like more information about how <code><phrase role="identifier">BOOST_FOREACH</phrase></code> works, you can read the article
+<ulink url="http://www.artima.com/cppsource/foreach.html">&quot;Conditional Love&quot;</ulink> at
+<ulink url="http://www.artima.com/cppsource/">The C++ Source</ulink>.</para>
 </section>
 </library>
 
