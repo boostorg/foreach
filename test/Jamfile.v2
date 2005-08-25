@@ -6,13 +6,14 @@
 import testing ;
 
 test-suite "foreach"
-        : [ run stl_byval.cpp ]
-        : [ run stl_byref.cpp ]
-        : [ run array_byval.cpp ]
-        : [ run array_byref.cpp ]
-        : [ run cstr_byval.cpp ]
-        : [ run cstr_byref.cpp ]
-        : [ run pair_byval.cpp ]
-        : [ run pair_byref.cpp ]
-        : [ run user_defined.cpp ]
+    : [ run stl_byval.cpp ]
+      [ run stl_byref.cpp ]
+      [ run array_byval.cpp ]
+      [ run array_byref.cpp ]
+      [ run cstr_byval.cpp ]
+      [ run cstr_byref.cpp ]
+      [ run pair_byval.cpp ]
+      [ run pair_byref.cpp ]
+      [ run user_defined.cpp ]
+      [ run call_once.cpp ]
     ;
