@@ -1,0 +1,62 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>History and Acknowledgements</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.66.1">
+<link rel="start" href="../index.html" title="Chapter 1. BOOST_FOREACH 1.0">
+<link rel="up" href="../index.html" title="Chapter 1. BOOST_FOREACH 1.0">
+<link rel="prev" href="portability.html" title="Portability">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><td valign="top"><img alt="boost.png (6897 bytes)" width="277" height="86" src="../../../../../boost.png"></td></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="portability.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a>
+</div>
+<div class="section" lang="en">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="boost_foreach.history_and_acknowledgements"></a>History and Acknowledgements</h2></div></div></div>
+<a name="history_and_acknowledgements.history"></a><h2>
+<a name="id445597"></a>History</h2>
+<p>
+The ideas for <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> began life in the Visual C++ group at Microsoft during the early phases of
+the design for C++/CLI. Whether to add a dedicated "foreach" looping construct to the language was
+an open question at the time. As a mental exercise, Anson Tsao sent around some proof-of-concept
+code which demonstrated that a pure library solution might be possible. The code was written in the
+proposed C++/CLI dialect of the time, for which there was no compiler as of yet. I was intrigued by
+the possibility, and I ported his code to Managed C++ and got it working. We worked together to
+refine the idea and eventually published an article about it in the November 2003 issue of the
+<a href="http://www.cuj.com" target="_top">CUJ</a>.</p>
+<p>
+After leaving Microsoft, I revisited the idea of a looping construct. I reimplemented the macro
+from scratch in standard C++, corrected some shortcomings of the CUJ version and rechristened it
+BOOST_FOREACH. In October of 2003 I began a discussion about it on the Boost developers list, where
+it met with a luke-warm reception. I dropped the issue until December 2004, when I reimplemented
+BOOST_FOREACH yet again. The new version only evaluated its sequence expression once and correctly
+handled both l-value and r-value sequence expressions. It was built on top of the recently
+accepted <a href="http://boost.org/libs/range/index.html" target="_top">Boost.Range</a> library, which increased its portability. This was the version that, on Dec. 12 2004,
+I finally submitted to Boost for review. It was accepted into Boost on May 5, 2005.</p>
+<a name="history_and_acknowledgements.acknowledgements"></a><h2>
+<a name="id445673"></a>Acknowledgements</h2>
+<p>
+Thanks go out to Anson Tsao of Microsoft for coming up with the idea and demonstrating its feasibility.
+I would also like to thank <a href="http://boost.org/people/thorsten_ottosen.html" target="_top">Thorsten Ottosen</a> for
+the <a href="http://boost.org/libs/range/index.html" target="_top">Boost.Range</a> library, on which the current version of <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> is built.</p>
+<a name="history_and_acknowledgements.further_reading"></a><h2>
+<a name="id445716"></a>Further Reading</h2>
+<p>
+If you would like more information about how <tt class="computeroutput"><span class="identifier">BOOST_FOREACH</span></tt> works, you can read the article
+<a href="http://www.artima.com/cppsource/foreach.html" target="_top">"Conditional Love"</a> at
+<a href="http://www.artima.com/cppsource/" target="_top">The C++ Source</a>.</p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><small>Copyright © 2004 Eric Niebler</small></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="portability.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a>
+</div>
+</body>
+</html>
