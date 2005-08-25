@@ -26,5 +26,7 @@ DEPENDS all : test ;
         : [ run pair_byref.cpp ]
         : [ run user_defined.cpp ]
         : [ run call_once.cpp ]
+        : [ run rvalue_const.cpp ]
+        : [ run rvalue_nonconst.cpp ]
         ;
 }
