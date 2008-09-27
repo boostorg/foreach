@@ -13,8 +13,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // define the container types, used by utility.hpp to generate the helper functions
-typedef std::pair<int*,int*> foreach_container_type;
-typedef std::pair<int const*,int const*> const foreach_const_container_type;
+typedef int foreach_container_type[5];
+typedef int const foreach_const_container_type[5];
 typedef int foreach_value_type;
 typedef int &foreach_reference_type;
 typedef int const &foreach_const_reference_type;
@@ -24,22 +24,25 @@ typedef int const &foreach_const_reference_type;
 ///////////////////////////////////////////////////////////////////////////////
 // define some containers
 //
-int my_array[] = { 1,2,3,4,5 };
-std::pair<int*,int*> my_pair(my_array,my_array+5);
-std::pair<int const*,int const*> const my_const_pair(my_array,my_array+5);
+int my_array[5] = { 1,2,3,4,5 };
+int const (&my_const_array)[5] = my_array;
 
 ///////////////////////////////////////////////////////////////////////////////
 // test_main
 //   
 int test_main( int, char*[] )
 {
-    boost::mpl::true_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_pair);
+    // non-const containers by reference
+    BOOST_CHECK(sequence_equal_byref_n_r(my_array, "\5\4\3\2\1"));
 
-    // non-const containers by value
-    BOOST_CHECK(sequence_equal_byval_n(my_pair, "\1\2\3\4\5"));
+    // const containers by reference
+    BOOST_CHECK(sequence_equal_byref_c_r(my_const_array, "\5\4\3\2\1"));
 
-    // const containers by value
-    BOOST_CHECK(sequence_equal_byval_c(my_const_pair, "\1\2\3\4\5"));
+    // mutate the mutable collections
+    mutate_foreach_byref_r(my_array);
+
+    // compare the mutated collections to the actual results
+    BOOST_CHECK(sequence_equal_byref_n_r(my_array, "\6\5\4\3\2"));
 
     return 0;
 }

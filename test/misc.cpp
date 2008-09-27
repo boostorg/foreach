@@ -1,41 +1,47 @@
-//  (C) Copyright Eric Niebler 2005.
+//  misc.cpp
+//
+//  (C) Copyright Eric Niebler 2008.
 //  Use, modification and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 /*
-  Revision history:
-  25 August 2005 : Initial version.
+ Revision history:
+   4 March 2008 : Initial version.
 */
 
 #include <vector>
 #include <boost/test/minimal.hpp>
 #include <boost/foreach.hpp>
 
-#ifdef BOOST_FOREACH_NO_RVALUE_DETECTION
-# error Expected failure : rvalues disallowed
-#else
-
-std::vector<int> get_vector()
+struct xxx : std::vector<int>
 {
-    return std::vector<int>(4, 4);
+    virtual ~xxx() = 0;
+};
+
+void test_abstract(xxx& rng)
+{
+    BOOST_FOREACH (int x, rng)
+    {
+        (void)x;
+    }
 }
+
+struct yyy : std::vector<int>
+{
+    void test()
+    {
+        BOOST_FOREACH(int x, *this)
+        {
+            (void)x;
+        }
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // test_main
 //   
 int test_main( int, char*[] )
 {
-    int counter = 0;
-
-    BOOST_FOREACH(int i, get_vector())
-    {
-        counter += i;
-    }
-
-    BOOST_CHECK(16 == counter);
-
     return 0;
 }
-
-#endif

@@ -1,3 +1,5 @@
+//  stl_byval.cpp
+///
 //  (C) Copyright Eric Niebler 2004.
 //  Use, modification and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
@@ -8,13 +10,14 @@
    25 August 2005 : Initial version.
 */
 
+#include <list>
 #include <boost/test/minimal.hpp>
 #include <boost/foreach.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 // define the container types, used by utility.hpp to generate the helper functions
-typedef std::pair<int*,int*> foreach_container_type;
-typedef std::pair<int const*,int const*> const foreach_const_container_type;
+typedef std::list<int> foreach_container_type;
+typedef std::list<int> const foreach_const_container_type;
 typedef int foreach_value_type;
 typedef int &foreach_reference_type;
 typedef int const &foreach_const_reference_type;
@@ -22,24 +25,36 @@ typedef int const &foreach_const_reference_type;
 #include "./utility.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
+// initialize a std::list<int>
+std::list<int> make_list()
+{
+    std::list<int> l;
+    l.push_back(1);
+    l.push_back(2);
+    l.push_back(3);
+    l.push_back(4);
+    l.push_back(5);
+    return l;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // define some containers
 //
-int my_array[] = { 1,2,3,4,5 };
-std::pair<int*,int*> my_pair(my_array,my_array+5);
-std::pair<int const*,int const*> const my_const_pair(my_array,my_array+5);
+std::list<int> my_list = make_list();
+std::list<int> const &my_const_list = my_list;
 
 ///////////////////////////////////////////////////////////////////////////////
 // test_main
 //   
 int test_main( int, char*[] )
 {
-    boost::mpl::true_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_pair);
+    boost::mpl::false_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_list);
 
     // non-const containers by value
-    BOOST_CHECK(sequence_equal_byval_n(my_pair, "\1\2\3\4\5"));
+    BOOST_CHECK(sequence_equal_byval_n_r(my_list, "\5\4\3\2\1"));
 
     // const containers by value
-    BOOST_CHECK(sequence_equal_byval_c(my_const_pair, "\1\2\3\4\5"));
+    BOOST_CHECK(sequence_equal_byval_c_r(my_const_list, "\5\4\3\2\1"));
 
     return 0;
 }

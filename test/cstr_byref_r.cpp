@@ -13,33 +13,37 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // define the container types, used by utility.hpp to generate the helper functions
-typedef std::pair<int*,int*> foreach_container_type;
-typedef std::pair<int const*,int const*> const foreach_const_container_type;
-typedef int foreach_value_type;
-typedef int &foreach_reference_type;
-typedef int const &foreach_const_reference_type;
+typedef char *foreach_container_type;
+typedef char const *foreach_const_container_type;
+typedef char foreach_value_type;
+typedef char &foreach_reference_type;
+typedef char const &foreach_const_reference_type;
 
 #include "./utility.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 // define some containers
 //
-int my_array[] = { 1,2,3,4,5 };
-std::pair<int*,int*> my_pair(my_array,my_array+5);
-std::pair<int const*,int const*> const my_const_pair(my_array,my_array+5);
+char my_ntcs_buffer[] = "\1\2\3\4\5";
+char *my_ntcs  = my_ntcs_buffer;
+char const *my_const_ntcs  = my_ntcs;
 
 ///////////////////////////////////////////////////////////////////////////////
 // test_main
 //   
 int test_main( int, char*[] )
 {
-    boost::mpl::true_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_pair);
+    // non-const containers by reference
+    BOOST_CHECK(sequence_equal_byref_n_r(my_ntcs, "\5\4\3\2\1"));
 
-    // non-const containers by value
-    BOOST_CHECK(sequence_equal_byval_n(my_pair, "\1\2\3\4\5"));
+    // const containers by reference
+    BOOST_CHECK(sequence_equal_byref_c_r(my_const_ntcs, "\5\4\3\2\1"));
 
-    // const containers by value
-    BOOST_CHECK(sequence_equal_byval_c(my_const_pair, "\1\2\3\4\5"));
+    // mutate the mutable collections
+    mutate_foreach_byref_r(my_ntcs);
+
+    // compare the mutated collections to the actual results
+    BOOST_CHECK(sequence_equal_byref_n_r(my_ntcs, "\6\5\4\3\2"));
 
     return 0;
 }

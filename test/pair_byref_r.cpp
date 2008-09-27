@@ -5,6 +5,7 @@
 
 /*
  Revision history:
+   13 December 2004 : Initial version.
    25 August 2005 : Initial version.
 */
 
@@ -33,13 +34,17 @@ std::pair<int const*,int const*> const my_const_pair(my_array,my_array+5);
 //   
 int test_main( int, char*[] )
 {
-    boost::mpl::true_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_pair);
+    // non-const containers by reference
+    BOOST_CHECK(sequence_equal_byref_n_r(my_pair, "\5\4\3\2\1"));
 
-    // non-const containers by value
-    BOOST_CHECK(sequence_equal_byval_n(my_pair, "\1\2\3\4\5"));
+    // const containers by reference
+    BOOST_CHECK(sequence_equal_byref_c_r(my_const_pair, "\5\4\3\2\1"));
 
-    // const containers by value
-    BOOST_CHECK(sequence_equal_byval_c(my_const_pair, "\1\2\3\4\5"));
+    // mutate the mutable collections
+    mutate_foreach_byref_r(my_pair);
+
+    // compare the mutated collections to the actual results
+    BOOST_CHECK(sequence_equal_byref_n_r(my_pair, "\6\5\4\3\2"));
 
     return 0;
 }

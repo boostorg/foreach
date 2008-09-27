@@ -28,7 +28,7 @@ int test_main( int, char*[] )
 {
     int counter = 0;
 
-    BOOST_FOREACH(int i, get_vector())
+    BOOST_REVERSE_FOREACH(int i, get_vector())
     {
         counter += i;
     }

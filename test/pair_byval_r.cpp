@@ -36,10 +36,10 @@ int test_main( int, char*[] )
     boost::mpl::true_ *p = BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(my_pair);
 
     // non-const containers by value
-    BOOST_CHECK(sequence_equal_byval_n(my_pair, "\1\2\3\4\5"));
+    BOOST_CHECK(sequence_equal_byval_n_r(my_pair, "\5\4\3\2\1"));
 
     // const containers by value
-    BOOST_CHECK(sequence_equal_byval_c(my_const_pair, "\1\2\3\4\5"));
+    BOOST_CHECK(sequence_equal_byval_c_r(my_const_pair, "\5\4\3\2\1"));
 
     return 0;
 }

@@ -162,6 +162,14 @@ Iterate over an expression that returns a sequence by value (i.e. an rvalue):
         // Note: get_vector_float() will be called exactly once
     }    
 
+Iterate in reverse:
+
+    std::list<int> list_int( /*...*/ );
+    BOOST_REVERSE_FOREACH( int i, list_int )
+    {
+        // do something with i
+    }
+
 Iterating over rvalues doesn't work on some older compilers. Check the 
 [link foreach.portability Portability] section to see whether your
 compiler supports this.
@@ -170,11 +178,12 @@ compiler supports this.
 
 People have complained about the name _foreach_. It's too long. `ALL CAPS` can
 get tiresome to look at. That may be true, but _foreach_ is merely following
-the [@../../../more/lib_guide.htm Boost Naming Convention]. That
+the [@http://www.boost.org/more/lib_guide.htm Boost Naming Convention]. That
 doesn't mean you're stuck with it, though. If you would like to use a different
 identifier (`foreach`, perhaps), you can simply do:
 
-    #define foreach BOOST_FOREACH
+    #define foreach         BOOST_FOREACH
+    #define reverse_foreach BOOST_REVERSE_FOREACH
 
 Only do this if you are sure that the identifier you choose will not cause
 name conflicts in your code.
@@ -208,15 +217,15 @@ which contains two iterators into a `std::string`.
             /* ... implementation ... */
         };
 
-        // Add overloads of boost_range_begin() and boost_range_end() in the
+        // Add overloads of range_begin() and range_end() in the
         // same namespace as sub_string, to be found by Argument-Dependent Lookup.
 
-        inline std::string::iterator boost_range_begin( sub_string & x )
+        inline std::string::iterator range_begin( sub_string & x )
         {
             return x.begin;
         }
 
-        inline std::string::iterator boost_range_end( sub_string & x )
+        inline std::string::iterator range_end( sub_string & x )
         {
             return x.end;
         }
@@ -224,12 +233,12 @@ which contains two iterators into a `std::string`.
         // Also add overloads for const sub_strings. Note we use the conversion
         // from string::iterator to string::const_iterator here.
 
-        inline std::string::const_iterator boost_range_begin( sub_string const & x )
+        inline std::string::const_iterator range_begin( sub_string const & x )
         {
             return x.begin;
         }
 
-        inline std::string::const_iterator boost_range_end( sub_string const & x )
+        inline std::string::const_iterator range_end( sub_string const & x )
         {
             return x.end;
         }
@@ -237,9 +246,9 @@ which contains two iterators into a `std::string`.
 
     namespace boost
     {
-        // specialize rannge_iterator and range_const_iterator in namespace boost
+        // specialize range_mutable_iterator and range_const_iterator in namespace boost
         template<>
-        struct range_iterator< my::sub_string >
+        struct range_mutable_iterator< my::sub_string >
         {
             typedef std::string::iterator type;
         };
