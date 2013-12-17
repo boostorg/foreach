@@ -32,5 +32,6 @@ test-suite "foreach"
       [ run rvalue_nonconst_r.cpp ]
       [ run dependent_type.cpp ]
       [ run misc.cpp ]
+      [ compile iter_movable.cpp ]
       [ compile noncopyable.cpp ]
     ;
