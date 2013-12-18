@@ -73,6 +73,7 @@
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/move/move.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/rend.hpp>
@@ -257,6 +258,10 @@ struct auto_any : auto_any_base
 {
     explicit auto_any(T const &t)
       : item(t)
+    {
+    }
+    explicit auto_any(BOOST_RV_REF(T) t)
+      : item(boost::move(t))
     {
     }
 
