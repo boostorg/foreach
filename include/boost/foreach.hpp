@@ -939,7 +939,7 @@ rderef(auto_any_t cur, type2type<T, C> *)
     (COL)
 
 # define BOOST_FOREACH_SHOULD_COPY(COL)                                                         \
-    (true ? 0 : boost::foreach_detail_::or_(                                                    \
+    (true ? nullptr : boost::foreach_detail_::or_(                                                    \
         BOOST_FOREACH_IS_RVALUE(COL)                                                            \
       , BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL)))
 
@@ -962,11 +962,11 @@ rderef(auto_any_t cur, type2type<T, C> *)
 // If the type happens to be a lightweight proxy, always make a copy.
 # define BOOST_FOREACH_SHOULD_COPY(COL)                                                         \
     (boost::foreach_detail_::should_copy_impl(                                                  \
-        true ? 0 : boost::foreach_detail_::or_(                                                 \
+        true ? nullptr : boost::foreach_detail_::or_(                                                 \
             boost::foreach_detail_::is_array_(COL)                                              \
           , BOOST_FOREACH_IS_NONCOPYABLE(COL)                                                   \
           , boost::foreach_detail_::not_(boost::foreach_detail_::is_const_(COL)))               \
-      , true ? 0 : BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL)                                      \
+      , true ? nullptr : BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL)                                      \
       , &BOOST_FOREACH_ID(_foreach_is_rvalue)))
 
 #elif !defined(BOOST_FOREACH_NO_RVALUE_DETECTION)
@@ -985,7 +985,7 @@ rderef(auto_any_t cur, type2type<T, C> *)
 // Determine whether the collection expression is an lvalue or an rvalue.
 // NOTE: this gets the answer wrong for const rvalues.
 # define BOOST_FOREACH_SHOULD_COPY(COL)                                                         \
-    (true ? 0 : boost::foreach_detail_::or_(                                                    \
+    (true ? nullptr : boost::foreach_detail_::or_(                                                    \
         boost::foreach_detail_::is_rvalue_((COL), 0)                                            \
       , BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL)))
 
@@ -1004,7 +1004,7 @@ rderef(auto_any_t cur, type2type<T, C> *)
 
 // Can't use rvalues with BOOST_FOREACH (unless they are lightweight proxies)
 # define BOOST_FOREACH_SHOULD_COPY(COL)                                                         \
-    (true ? 0 : BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL))
+    (true ? nullptr : BOOST_FOREACH_IS_LIGHTWEIGHT_PROXY(COL))
 
 #endif
 
