@@ -909,7 +909,7 @@ rderef(auto_any_t cur, type2type<T, C> *)
 
 // A sneaky way to get the type of the collection without evaluating the expression
 #define BOOST_FOREACH_TYPEOF(COL)                                                               \
-    (true ? 0 : boost::foreach_detail_::encode_type(COL, boost::foreach_detail_::is_const_(COL)))
+    (true ? nullptr : boost::foreach_detail_::encode_type(COL, boost::foreach_detail_::is_const_(COL)))
 
 // returns true_* if the type is noncopyable
 #define BOOST_FOREACH_IS_NONCOPYABLE(COL)                                                       \
