@@ -31,7 +31,7 @@
 #include <boost/detail/workaround.hpp>
 
 // Define a compiler generic null pointer value
-#if !defined(BOOST_NO_NULLPTR)
+#if defined(BOOST_NO_NULLPTR)
 #define BOOST_FOREACH_NULL 0
 #else
 #define BOOST_FOREACH_NULL nullptr
