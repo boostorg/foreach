@@ -99,6 +99,15 @@
 # include <boost/type_traits/remove_const.hpp>
 #endif
 
+// workaround for name clash with qt's foreach
+#if defined(BOOST_MSVC) || defined(BOOST_CLANG) || defined(BOOST_GCC)
+# ifdef foreach
+#  define BOOST_QFOREACH_WORKAROUND
+#  pragma push_macro("foreach")
+# endif
+#endif
+
+
 namespace boost
 {
 
@@ -1130,5 +1139,12 @@ rderef(auto_any_t cur, type2type<T, C> *)
               BOOST_FOREACH_ID(_foreach_continue) ? BOOST_FOREACH_RNEXT(COL) : (void)0)                           \
         if  (boost::foreach_detail_::set_false(BOOST_FOREACH_ID(_foreach_continue))) {} else                      \
         for (VAR = BOOST_FOREACH_RDEREF(COL); !BOOST_FOREACH_ID(_foreach_continue); BOOST_FOREACH_ID(_foreach_continue) = true)
+
+#if defined(BOOST_MSVC) || defined(BOOST_CLANG) || defined(BOOST_GCC)
+# ifdef BOOST_QFOREACH_WORKAROUND
+#  undef BOOST_QFOREACH_WORKAROUND
+#  pragma pop_macro("foreach")
+# endif
+#endif
 
 #endif
