@@ -14,6 +14,14 @@
 #ifndef BOOST_FOREACH_FWD_HPP
 #define BOOST_FOREACH_FWD_HPP
 
+// workaround for name clash with qt's foreach
+#if defined(BOOST_MSVC) || defined(BOOST_CLANG) || defined(BOOST_GCC)
+# ifdef foreach
+#  define BOOST_QFOREACH_WORKAROUND
+#  pragma push_macro("foreach")
+# endif
+#endif
+
 // This must be at global scope, hence the uglified name
 enum boost_foreach_argument_dependent_lookup_hack
 {
@@ -47,5 +55,12 @@ namespace foreach
 } // namespace foreach
 
 } // namespace boost
+
+#if defined(BOOST_MSVC) || defined(BOOST_CLANG) || defined(BOOST_GCC)
+# ifdef BOOST_QFOREACH_WORKAROUND
+#  undef BOOST_QFOREACH_WORKAROUND
+#  pragma pop_macro("foreach")
+# endif
+#endif
 
 #endif
